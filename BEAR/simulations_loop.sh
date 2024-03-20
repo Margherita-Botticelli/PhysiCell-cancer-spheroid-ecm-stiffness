@@ -1,9 +1,8 @@
 #!/bin/bash
 #SBATCH --qos bbdefault
-#SBATCH --ntasks 5
+#SBATCH --ntasks 10
 #SBATCH --time 3000:0
 #SBATCH --account=spillf-systems-mechanobiology-health-disease
-
 
 set -e
 
