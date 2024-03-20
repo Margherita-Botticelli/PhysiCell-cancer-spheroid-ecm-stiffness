@@ -2,18 +2,8 @@ from pyMCDS_ECM import *
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-import os, re
 import seaborn
-from joblib import Parallel, delayed
-from scipy import stats
-from matplotlib.transforms import Affine2D
-import statistics 
 import pandas as pd
-from skimage import io, draw, util
-from tqdm import tqdm
-import xml.etree.ElementTree as ET
-from sklearn.cluster import DBSCAN, OPTICS
-
 
 def plots_adh_vs_rep(data, simulation_name, save_folder):
 
@@ -119,5 +109,5 @@ def plots_adh_vs_rep(data, simulation_name, save_folder):
     plt.suptitle(f'Spheroid growth relative to t$_0$',fontsize=15, y=1.0)
     plt.title(f'Prolif rate={prolif}, max mot speed={max_mot_speed}',fontsize=12)
 
-    plt.savefig(save_folder + 'adhesion_vs_repulsion_rib' + str(ribose)+ '_' + str(simulation_name) + '.png', bbox_inches = "tight")
+    plt.savefig(save_folder + f'plots/adhesion_vs_repulsion_rib{ribose}_{simulation_name}.png', bbox_inches = "tight")
 
