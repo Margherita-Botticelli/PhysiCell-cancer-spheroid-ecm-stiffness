@@ -12,10 +12,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.patches import Circle
 import imageio
-import math, os, sys, re
-import scipy
-import distutils.util
-
+import os, sys, re
 
 def print_stats(arr):
     """
@@ -259,28 +256,3 @@ def create_gif(data_folder: str, save_folder: str, save_name: str):
     imageio.mimsave(save_folder + save_name + '.gif',images)
 
 
-
-if __name__ == '__main__':
-    # auto call the create movie function using the current directory as the data path and save path, and with teh given name.
-
-    # name_of_movie = sys.argv[1]
-
-    # create_movie('.', '', name_of_movie)
-
-    
-    snapshot = 'output00000050'
-    
-    data_folder = 'C:\\Users\\margh\\OneDrive - University of Birmingham\\Documents\\GitHub\\PhysiCell-ECM-extension\\\output\\'
-
-    save_folder = 'C:\\Users\\margh\\OneDrive - University of Birmingham\\Documents\\GitHub\\PhysiCell-ECM-extension\\\output\\' #'..\\user_projects\\ecm_extension\\results\\gif\\'
-    
-    save_name = 'gif_cell_ECM'
-    
-    # Create one figure
-    #create_plot(snapshot, data_folder, save_folder)
-    
-    # Create gif
-    create_gif(data_folder, save_folder, save_name)
-    
-    # Create movie
-    #create_movie(data_folder, save_folder, save_name)
