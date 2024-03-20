@@ -110,5 +110,5 @@ def plots_ecm_remodeling(data, simulation_name, save_folder):
     ### Set title
     plt.title(r'$\bf{Spheroid\,growth\,relative\,to\,t_0}$'+f'\n{prolif=}, {max_mot_speed=}, {cell_adh=}, {cell_rep=}\n{r_anisotropy=}',fontsize=12)
 
-    plt.savefig(save_folder + f'plots_ecm_remodeling_rib_{ribose}_{simulation_name}.png', bbox_inches = "tight")
+    plt.savefig(save_folder + f'plots/plots_ecm_remodeling_rib{ribose}_{simulation_name}.png', bbox_inches = "tight")
 
