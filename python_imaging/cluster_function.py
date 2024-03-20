@@ -128,9 +128,7 @@ def cluster_function(data,save_folder):
                 plt.style.use('ggplot')
                 plt.style.use('seaborn-v0_8-colorblind')
 
-                # io.imsave(save_folder + f'clusters_rib{ribose}_{simulation}_{seed}_t{t}.png', util.img_as_ubyte(cluster_image), check_contrast=False)
-
-                plt.savefig(f'../clusters/clusters_rib{ribose}_{simulation}_{seed}_t{t}.png', dpi=600)
+                plt.savefig(save_folder + f'/clusters/clusters_rib{ribose}_{simulation}_{seed}_t{int(t)}.png', dpi=600)
                 
                 plt.close()
         
@@ -157,7 +155,7 @@ def cluster_function(data,save_folder):
     plt.style.use('ggplot')
     plt.style.use('seaborn-v0_8-colorblind')
 
-    plt.savefig(f'../results/main_cluster_cell_percentage_rib{ribose}_{simulation}.png', dpi=600)
+    plt.savefig(save_folder + f'plots/main_cluster_cell_percentage_rib{ribose}_{simulation}.png', dpi=600)
             
     plt.close()
     
