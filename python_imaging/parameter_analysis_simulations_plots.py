@@ -22,8 +22,11 @@ if __name__ == '__main__':
     plt.style.use('ggplot')
     plt.style.use('seaborn-v0_8-colorblind')
 
+    proj = 'ecm_density'
+
     #### Save folder
-    save_folder = '../results/'  #results' + simulation + '/'     
+    save_folder = f'../results/{proj}/'  
+    data_folder = f'../data/{proj}/'
 
     colors = seaborn.color_palette('colorblind') #+ seaborn.color_palette('dark') + seaborn.color_palette('muted') + seaborn.color_palette('bright')
 
@@ -80,8 +83,9 @@ if __name__ == '__main__':
     riboses_list = np.repeat([riboses] * len(simulations), len(seeds))
     simulations_list = np.repeat([simulations], len(seeds) * len(riboses))
     seeds_list = seeds * len(simulations) * len(riboses)
+    data_folder_list = [data_folder] * len(seeds) * len(simulations) * len(riboses)
 
-    Parallel(n_jobs=-1)(delayed(simulation_data)(simulation,ribose,seed) for simulation,ribose,seed in zip(simulations_list,riboses_list,seeds_list))
+    Parallel(n_jobs=-1)(delayed(simulation_data)(data_folder,simulation,ribose,seed) for data_folder,simulation,ribose,seed in zip(data_folder_list,simulations_list,riboses_list,seeds_list))
 
     print('Parallel end\n', flush=True)
 
@@ -94,18 +98,15 @@ if __name__ == '__main__':
     for sim in simulations:
         for rib in riboses:
             for seed in seeds:
-                df_new = pd.read_pickle(f'../dataframes_density_pickle/dataframe_rib{rib}_{sim}_{seed}.pkl')
+                df_new = pd.read_pickle(data_folder + f'/dataframe_rib{rib}_{sim}_{seed}.pkl')
 
                 df_list.append(df_new)
                 # pd.set_option('display.max_rows', None)
                 # pd.set_option('display.max_columns', None)
                 # print(f'data frame new \n {df_new}', flush=True)
 
-    
-    
     df = pd.concat(df_list)
     
-
     ### Print dataframe by displaying max rows and columns
     # pd.set_option('display.max_rows', None)
     # pd.set_option('display.max_columns', None)
@@ -183,7 +184,7 @@ if __name__ == '__main__':
             for t in times:
                 seed = 0
                 data = df[(df['simulation'] == sim) & (df['ribose'] == rib) & (df['seed'] == seed) & (df['t'] == t)]
-                # spheroid_area_function(data,figure=True)
+                # spheroid_area_function(data,save_folder=save_folder,figure=True)
                 # pd.set_option('display.max_columns', None)
 
                 print('data frame \n', flush=True)
@@ -191,10 +192,10 @@ if __name__ == '__main__':
 
                 time_step = data[data['ID']==0].index.values.astype(int)[0]
                 snapshot = 'output' + '{:08d}'.format(time_step)
-                data_folder = f'../ribose_{rib}/output_density/output_{sim}_{seed}/'
-                save_name = f'../images/full_image_rib{rib}_{sim}_{seed}_t{int(t)}.png'
+                data_folder_sim = data_folder + f'output_rib{rib}_{sim}_{seed}/'
+                save_name = save_folder + f'images/full_image_rib{rib}_{sim}_{seed}_t{int(t)}.png'
 
                 print(f'{save_name=}\n', flush=True)
-                create_plot(data, snapshot, data_folder, save_name, output_plot=True, show_plot=False)
+                create_plot(data, snapshot, data_folder_sim, save_name, output_plot=True, show_plot=False)
 
 
