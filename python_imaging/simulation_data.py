@@ -86,7 +86,7 @@ def snapshot_data(ribose, simulation, seed,snapshot,data_folder):
     # print(f"Compute spheroid area", flush=True)
 
     #### Call spheroid area function 
-    spheroid_area = spheroid_area_function(cell_df,figure=False)
+    spheroid_area = spheroid_area_function(cell_df)
 
     cell_df['spheroid_area'] = spheroid_area
 
@@ -103,12 +103,12 @@ def snapshot_data(ribose, simulation, seed,snapshot,data_folder):
     return cell_df
 
 
-def simulation_data(simulation,ribose,seed):
+def simulation_data(data_folder_dir,simulation,ribose,seed):
     replace = False
  
     print(f"\n### Simulation {simulation}, ribose {ribose}, seed {seed} ###\n", flush=True)
 
-    if((os.path.exists(f'../dataframes_pickle/dataframe_rib{ribose}_{simulation}_{seed}.pkl')) and (replace==False)):
+    if((os.path.exists(data_folder_dir + f'/output_rib{ribose}_{simulation}_{seed}/dataframe_rib{ribose}_{simulation}_{seed}.pkl')) and (replace==False)):
         print(f"\nDataframe exists\n", flush=True)
         return
     
@@ -117,7 +117,7 @@ def simulation_data(simulation,ribose,seed):
             print(f"\n!!! Replace {replace} !!!\n", flush=True)
 
         # Data folder
-        data_folder = f'../ribose_{ribose}/output_density/output_{simulation}_{seed}/'
+        data_folder = data_folder_dir + f'/output_rib{ribose}_{simulation}_{seed}/'
         
         files = os.listdir(data_folder)
         files.sort()
@@ -153,7 +153,7 @@ def simulation_data(simulation,ribose,seed):
         print('data frame \n', flush=True)
         print(df, flush = True)
 
-        df.to_pickle(f'../dataframes_pickle/dataframe_rib{ribose}_{simulation}_{seed}.pkl')
+        df.to_pickle(data_folder + f'dataframe_rib{ribose}_{simulation}_{seed}.pkl')
 
         return
 
