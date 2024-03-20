@@ -79,7 +79,7 @@ def plots_spheroid_area_over_time(data,save_folder,max_spheroid_area):
 
     # print(f'Stage 4: Plots look ready\n',flush=True)
     
-    plt.savefig(save_folder + 'spheroid_area_' + str(simulation) + '.png', bbox_inches = "tight")
+    plt.savefig(save_folder + f'plots/spheroid_area_rib{ribose}_{simulation}.png', bbox_inches = "tight")
 
     # print(f'Stage 5: Figure spheroid_area_{simulation} saved\n',flush=True)
     # plt.close()
