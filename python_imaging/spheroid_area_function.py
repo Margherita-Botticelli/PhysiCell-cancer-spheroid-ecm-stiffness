@@ -7,7 +7,7 @@ import seaborn
 
 
 
-def spheroid_area_function(data,figure=False):
+def spheroid_area_function(data,save_folder='../results/',figure=False):
     
     ribose = data['ribose'].loc[0]
     simulation = data['simulation'].loc[0]
@@ -73,9 +73,7 @@ def spheroid_area_function(data,figure=False):
         plt.style.use('ggplot')
         plt.style.use('seaborn-v0_8-colorblind')
 
-        # io.imsave(save_folder + f'clusters_rib{ribose}_{simulation}_{seed}_t{t}.png', util.img_as_ubyte(cluster_image), check_contrast=False)
-
-        plt.savefig(f'../images/cell_image_rib{ribose}_{simulation}_{seed}_t{int(t)}.png', dpi=600)
+        plt.savefig(save_folder + f'/images/cell_image_rib{ribose}_{simulation}_{seed}_t{int(t)}.png', dpi=600)
         
         plt.close()
 
