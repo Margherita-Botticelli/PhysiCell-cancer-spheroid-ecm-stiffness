@@ -1,18 +1,8 @@
 from pyMCDS_ECM import *
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib as mpl
-import os, re
 import seaborn
-from joblib import Parallel, delayed
-from scipy import stats
-from matplotlib.transforms import Affine2D
-import statistics 
-import pandas as pd
-from skimage import io, draw, util
-from tqdm import tqdm
-import xml.etree.ElementTree as ET
-from sklearn.cluster import DBSCAN, OPTICS
+
 
 def plots_spheroid_area_growth(data,fig_num,save_folder,simulation_name):
 
@@ -68,7 +58,7 @@ def plots_spheroid_area_growth(data,fig_num,save_folder,simulation_name):
     
     plt.legend(["0 mM", "50 mM", '200 mM'],title='Ribose',frameon=legend_drawn_flag)
     
-    # plt.savefig(save_folder + 'spheroid_growth_' + str(simulation_name) + '.png', bbox_inches = "tight")
-    plt.savefig(save_folder + 'spheroid_growth_ratio' + str(int(cell_adh/cell_rep*100)) + '_' + str(simulation_name) + '.png', bbox_inches = "tight")
+    # plt.savefig(save_folder + f'plots/spheroid_growth_rib{ribose}_{simulation_name}.png', bbox_inches = "tight")
+    plt.savefig(save_folder + f'plots/spheroid_growth_rib{ribose}_{simulation_name}.png', bbox_inches = "tight")
     # return res.slope
 
