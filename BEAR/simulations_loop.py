@@ -1,27 +1,27 @@
-from cmath import phase
 import xml.etree.ElementTree as ET
 import os, sys
 from pathlib import Path
-from networkx import is_empty
 import numpy as np
 import subprocess
 
-repeat_simulations = False
+repeat_simulations = True
+proj = 'ecm_density'
 
 if repeat_simulations:
     seeds = [0]#[6,7,8,9,10,11]
-    ribose = [0]
+    riboses = [0]
     simulations = [758]
-    return_code = os.system(f'make reset; make clean; make load PROJ=simulations')
+    return_code = os.system(f'cd .. ; make reset; make clean; make load PROJ={proj}')
     if return_code != 0:
         print(f'Failed with exit code: {return_code}')
         sys.exit()
+    sys.exit()
 
 
 else:
     #### Define parameter values
     seeds = [0,1,2,3,4,5,6,7,8,9]
-    ribose = [0]#, 50, 200]
+    riboses = [0]#, 50, 200]
 
     proliferations_val = [0.0007,0.00105,0.0014] #np.repeat([0.00035, 0.0007, 0.00105, 0.0014],6) # np.arange(0.02, 1, ).round(3)
     mot_speeds_val = [0.5,0.75,1.0] #[0.3, 0.5, 0.7, 0.9, 1.1] #* 4
@@ -74,7 +74,7 @@ else:
     # sys.exit() 
 
     ### Start the experiment with the given ribose and seed in the settings file ###
-    return_code = os.system(f'make reset; make clean; make load PROJ=simulations')
+    return_code = os.system(f'cd .. ; make reset; make clean; make load PROJ={proj}')
 
     if return_code != 0:
         print(f'Failed with exit code: {return_code}')
@@ -83,7 +83,7 @@ else:
     directories = []
 
     #### Check what is the last simulation number
-    for p in Path('./user_projects/ribose_0/output_density/').iterdir():
+    for p in Path(f'./data/{proj}').iterdir():
         if p.is_dir():
             directories.append(p.name)
     if not directories:
@@ -91,7 +91,7 @@ else:
     else:
         simulation_ids = [int(name.split('_')[1]) for name in directories]
         simulation_ids.sort()
-        simulation_id = 1#max(simulation_ids) + 1
+        simulation_id = max(simulation_ids) + 1
 
     print(f'simulations: {simulation_id} to {simulation_id + num_simulations -1} ')
 
@@ -100,7 +100,7 @@ else:
 results = []
 i = 0
 
-for simulation in simulations:
+for sim in simulations:
     
     if repeat_simulations == False:
         proliferation = proliferations[i]
@@ -111,11 +111,11 @@ for simulation in simulations:
         r_density = r_densities[i]
         # r_anisotropy = 0
 
-    for rib in ribose: 
+    for rib in riboses: 
         for seed in seeds:
-            print(f'\n####Simulation {simulation}, ribose {rib}, random seed {seed}', flush=True)
+            print(f'\n####Simulation {sim}, ribose {rib}, random seed {seed}', flush=True)
             
-            return_code = os.system(f'mkdir -p ./user_projects/ribose_{rib}/output_density/output_{simulation}_{seed}')
+            return_code = os.system(f'mkdir -p ./data/{proj}/output_rib{rib}_{sim}_{seed}')
             if return_code != 0:
                 print(f'Failed with exit code: {return_code}')
                 sys.exit()  
@@ -124,13 +124,13 @@ for simulation in simulations:
                 ### Start the experiment with the given ribose and seed in the settings file ###
                 
                 #### Copy PhysiCell_settings file from existing simulation with ribose 0 and seed 0 into config folder
-                return_code = os.system(f'cp ./user_projects/ribose_0/output_density/output_{simulation}_0/PhysiCell_settings.xml ./config/')
+                return_code = os.system(f'cp ./data/{proj}/output_rib{rib}_{sim}_0/PhysiCell_settings.xml ./config/')
                 if return_code != 0:
                     print(f'Failed with exit code: {return_code}')
                     sys.exit()
                 
                 #### Copy custom.cpp file from existing simulation with ribose 0 and seed 0 into custom_modules folder
-                return_code = os.system(f'cp ./user_projects/simulations/custom_modules/* ./custom_modules/ ')
+                return_code = os.system(f'cp ./user_projects/{proj}/custom_modules/* ./custom_modules/ ')
                 if return_code != 0:
                     print(f'Failed with exit code: {return_code}')
                     sys.exit()
@@ -172,11 +172,11 @@ for simulation in simulations:
                 virtual_wall_at_domain_edge.text = 'true'
                 random_seed.text = str(seed) 
                 ribose_concentration.text = str(rib)
-                folder.text = f'./user_projects/ribose_{rib}/output_density/output_{simulation}_{seed}'
+                folder.text = f'./data/{proj}/output_rib{rib}_{sim}_0/'
 
             else:
                 random_seed.text = str(seed) 
-                folder.text = f'./user_projects/ribose_{rib}/output_density/output_{simulation}_{seed}'
+                folder.text = f'./data/{proj}/output_rib{rib}_{sim}_0/'
                 ribose_concentration.text = str(rib)
                 cell_cell_adhesion_strength.text = str(adhesion)
                 cell_cell_repulsion_strength.text = str(repulsion)
@@ -198,10 +198,10 @@ for simulation in simulations:
             print(f'#### Xml settings file has been written\n',flush=True)
 
             #### Copy custom.cpp file from custom_modules folder into new simulation folder
-            os.system(f'cp ./custom_modules/custom.cpp ./user_projects/ribose_{rib}/output_density/output_{simulation}_{seed}')
+            os.system(f'cp ./custom_modules/custom.cpp ./data/{proj}/output_rib{rib}_{sim}_0/')
 
             #### Copy PhysiCell_settings file from config folder into new simulation folder
-            os.system(f'cp ./config/PhysiCell_settings.xml ./user_projects/ribose_{rib}/output_density/output_{simulation}_{seed}')
+            os.system(f'cp ./config/PhysiCell_settings.xml ./data/{proj}/output_rib{rib}_{sim}_0/')
 
             #### START SIMULATION ####
             os.system('make') 
