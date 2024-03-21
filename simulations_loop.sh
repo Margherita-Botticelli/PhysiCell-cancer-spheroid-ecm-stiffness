@@ -13,6 +13,6 @@ module load bear-apps/2022a
 
 source activate python_imaging
 
-python python ./simulations_loop.py
+python ./simulations_loop.py
 
 echo "Finished!"
