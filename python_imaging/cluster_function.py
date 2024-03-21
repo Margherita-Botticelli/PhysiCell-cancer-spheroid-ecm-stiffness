@@ -128,7 +128,7 @@ def cluster_function(data,save_folder):
                 plt.style.use('ggplot')
                 plt.style.use('seaborn-v0_8-colorblind')
 
-                plt.savefig(save_folder + f'/clusters/clusters_rib{ribose}_{simulation}_{seed}_t{int(t)}.png', dpi=600)
+                plt.savefig(save_folder + f'clusters/clusters_rib{ribose}_{simulation}_{seed}_t{int(t)}.png', dpi=600)
                 
                 plt.close()
         
