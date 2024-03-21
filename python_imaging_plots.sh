@@ -1,8 +1,7 @@
 #!/bin/bash
 #SBATCH --qos bbdefault
-#SBATCH --nodes=10
+#SBATCH --ntasks 10
 #SBATCH --mem-per-cpu=8G
-#SBATCH --ntasks 3
 #SBATCH --time 3000:0
 #SBATCH --account spillf-systems-mechanobiology-health-disease
 
