@@ -30,42 +30,55 @@ def plots_adh_vs_rep(data, simulation_name, save_folder):
         df_sim = data[(data['simulation'] == simulation)]
         # print(f'data frame:\n {df_sim}\n', flush=True)
 
-        # spheroid_area = 
-        # print(f'spheroid_area:\n {spheroid_area}\n', flush=True)
-
-        # spheroid_area = np.vstack(spheroid_area)
-        # print(f'spheroid_area vstack:\n {spheroid_area}\n', flush=True)
-
-        spheroid_area_init = df_sim[(df_sim['t'] == 0)]['spheroid_area'].to_numpy()
-        spheroid_area_fin = df_sim[(df_sim['t'] == 5000)]['spheroid_area'].to_numpy()
+        spheroid_area_init = df_sim[(df_sim['t'] == min(t))]['spheroid_area'].to_numpy()
+        spheroid_area_fin = df_sim[(df_sim['t'] == max(t))]['spheroid_area'].to_numpy()
         spheroid_area_ratio = spheroid_area_fin/spheroid_area_init
 
         spheroid_area_ratio_mean.append(np.mean(spheroid_area_ratio))
         spheroid_area_ratio_std.append(np.std(spheroid_area_ratio))
         # print(f'{spheroid_area_ratio_mean=}',flush=True)
         # print(f'{spheroid_area_ratio_std=}',flush=True)
-        
 
         cell_adh.append(float(df_sim['cell_adh'].iloc[0]))
         cell_rep.append(float(df_sim['cell_rep'].iloc[0]))
     
-    if len(np.unique(cell_adh))<len(np.unique(cell_rep)):
-        size = len(np.unique(cell_adh))
-    else:
-        size = len(np.unique(cell_rep))
+    size_rep = len(np.unique(cell_rep))
+    size_adh = len(np.unique(cell_adh))
 
-    spheroid_area_ratio = np.reshape(spheroid_area_ratio_mean, (size,-1))
-    cell_rep = np.reshape(cell_rep, (size,-1))
-    cell_adh = np.reshape(cell_adh, (size,-1))
-    if len(np.unique(cell_adh))<len(np.unique(cell_rep)):
-        ratio = [i / j for i, j in zip(cell_adh[0],cell_rep[0])]
-        # ratio = [i / j for i, j in zip(cell_rep[0],cell_adh[0])]
-        index = cell_adh[:,0]
-    else:
-        ratio = [i / j for i, j in zip(cell_adh[0],cell_rep[0])]
-        index = cell_rep[:,0]
+    columns = np.unique(cell_adh) 
+    index = np.flip(np.unique(cell_rep))
+
+    # annot_arr = 
+
+    df = pd.DataFrame(columns=columns, index=index)
+    df = df.fillna(0.0)
+    
+    for adh,rep,area in zip(cell_adh,cell_rep,spheroid_area_ratio_mean):
+        df[adh][rep] = area
+
+        # annot_mean = ["%.2f" % number for number in spheroid_area_ratio_mean]
+        # annot_std = ["%.2f" % number for number in spheroid_area_ratio_std]
+        # annot_pm = [u'\u00B1']*len(annot_mean)
+        # annot_arr = np.array([a+b+c for a,b,c in zip(annot_mean,annot_pm,annot_std)])
+        # annot_arr = np.reshape(annot_arr, (size,-1))
+
+
+    # if len(np.unique(cell_adh))<len(np.unique(cell_rep)):
+    #     size = len(np.unique(cell_adh))
+    # else:
+    #     size = len(np.unique(cell_rep))
+
+    # spheroid_area_ratio = np.reshape(spheroid_area_ratio_mean, (size,-1))
+    # cell_rep = np.reshape(cell_rep, (size,-1))
+    # cell_adh = np.reshape(cell_adh, (size,-1))
+    # if len(np.unique(cell_adh))<len(np.unique(cell_rep)):
+    #     ratio = [i / j for i, j in zip(cell_adh[0],cell_rep[0])]
+    #     # ratio = [i / j for i, j in zip(cell_rep[0],cell_adh[0])]
+    #     index = cell_adh[:,0]
+    # else:
+    #     ratio = [i / j for i, j in zip(cell_adh[0],cell_rep[0])]
+    #     index = cell_rep[:,0]
         
-
     #### Select color for plot depending on ribose concentration
     if(ribose == 0):
         color_rib = seaborn.color_palette('colorblind')[0]
@@ -74,35 +87,34 @@ def plots_adh_vs_rep(data, simulation_name, save_folder):
     elif(ribose == 200):
         color_rib = seaborn.color_palette('colorblind')[2]
     
-    
     # print(f'spheroid_area_ratio: {spheroid_area_ratio}\n', flush=True)
     
     # print(f'cell_rep: \n{cell_rep}\n', flush=True)
     # print(f'cell_adh: \n{cell_adh}\n', flush=True)
     # print(f'ratio: \n{ratio}', flush=True)
 
-    df = pd.DataFrame(data=spheroid_area_ratio, columns=ratio, index=index)
+    # df = pd.DataFrame(data=spheroid_area_ratio, columns=cell_adh[0,:], index=cell_rep[:,0])
     # df = pd.DataFrame(data=cell_rep, columns=ratio, index=cell_adh[:,0])
 
     cmap = mpl.colors.LinearSegmentedColormap.from_list("", ['white',color_rib])
 
-    annot_mean = ["%.2f" % number for number in spheroid_area_ratio_mean]
-    annot_std = ["%.2f" % number for number in spheroid_area_ratio_std]
-    annot_pm = [u'\u00B1']*len(annot_mean)
-    annot_arr = np.array([a+b+c for a,b,c in zip(annot_mean,annot_pm,annot_std)])
-    annot_arr = np.reshape(annot_arr, (size,-1))
-    ax = seaborn.heatmap(df,cmap=cmap,vmin=1, vmax=7,annot = annot_arr, fmt="s", cbar_kws={'label': 'Growth'})
+    print(df,flush=True)
+
+
+    # ax = seaborn.heatmap(df,cmap=cmap,vmin=1, vmax=7,annot = annot_arr, fmt="s", cbar_kws={'label': 'Growth'})
+    ax = seaborn.heatmap(df,cmap=cmap,vmin=1, vmax=7, cbar_kws={'label': 'Growth'})
 
     ax.figure.axes[-1].yaxis.set_label_position('left')
 
     ###  Set axis labels
-    if len(np.unique(cell_adh))<len(np.unique(cell_rep)):
-        plt.ylabel("Adhesion strength",fontsize=15)
-        plt.xlabel("Ratio repulsion/adhesion",fontsize=15)
-    else:
-        plt.ylabel("Repulsion strength",fontsize=15)
-        plt.xlabel("Ratio adhesion/repulsion",fontsize=15)
-    
+    plt.ylabel("Repulsion strength",fontsize=15)
+    plt.xlabel("Adhesion strength",fontsize=15)
+    # if len(np.unique(cell_adh))<len(np.unique(cell_rep)):
+    #     plt.ylabel("Adhesion strength",fontsize=15)
+    #     plt.xlabel("Ratio repulsion/adhesion",fontsize=15)
+    # else:
+    #     plt.ylabel("Repulsion strength",fontsize=15)
+    #     plt.xlabel("Ratio adhesion/repulsion",fontsize=15)
     
     
     ### Set title, overlaied plots
