@@ -593,7 +593,7 @@ std::vector<std::string> AMIGOS_invasion_coloring_function( Cell* pCell )
 	return output; 
 }
 
-double dot_product( const std::vector<double>& v , const std::vector<double>& w )
+double dot_product_ext( const std::vector<double>& v , const std::vector<double>& w )
 {
 	double out = 0.0; 
 	for( unsigned int i=0 ; i < v.size() ; i++ )
@@ -847,12 +847,12 @@ void cell_ecm_interaction_motility_direction( Cell* pCell, Phenotype& phenotype,
 	else if(parameters.strings("ecm_definition") == "fiber")
 	{
 		// to determine direction along fiber_orientation, find part of d_choice that is perpendicular to fiber_orientation; 
-		std::vector<double> d_perp = d_pref - dot_product(d_pref, fiber_orientation) * fiber_orientation; 
+		std::vector<double> d_perp = d_pref - dot_product_ext(d_pref, fiber_orientation) * fiber_orientation; 
 		normalize( &d_perp ); 
 		
 		// find constants to span d_choice with d_perp and fiber_orientation
-		double c_1 = dot_product( d_pref , d_perp ); 
-		double c_2 = dot_product( d_pref, fiber_orientation ); 
+		double c_1 = dot_product_ext( d_pref , d_perp ); 
+		double c_2 = dot_product_ext( d_pref, fiber_orientation ); 
 
 		// calculate bias away from directed motility - combination of sensitity to ECM and anisotropy
 		double gamma = ecm_sensitivity * anisotropy; // at low values, directed motility vector is recoved. At high values, fiber direction vector is recovered.
@@ -945,7 +945,7 @@ void ecm_update_from_cell_velocity(Cell* pCell , Phenotype& phenotype , double d
 		norm_cell_motility = phenotype.motility.motility_vector;
 		normalize(&norm_cell_motility);
 
-		ddotf = dot_product(fiber_orientation, norm_cell_motility);
+		ddotf = dot_product_ext(fiber_orientation, norm_cell_motility);
 
 		// flips the orientation vector so that it is aligned correctly with the moving cell for proper reoirentation later.
 		fiber_orientation = sign_function(ddotf) * fiber_orientation; 
