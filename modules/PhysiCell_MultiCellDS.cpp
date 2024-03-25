@@ -479,7 +479,7 @@ void add_PhysiCell_cells_to_open_xml_pugi( pugi::xml_document& xml_dom, std::str
 			for( int i=0; i < (*all_cells)[0]->custom_data.vector_variables.size(); i++ )
 			{
 				size = (*all_cells)[0]->custom_data.vector_variables[i].value.size(); 
-				char szTemp [1024]; 
+;				char szTemp [1024]; 
 				strcpy( szTemp, (*all_cells)[0]->custom_data.vector_variables[i].name.c_str() ); 
 				node_temp1 = node_temp1.append_child( "label" );
 				node_temp1.append_child( pugi::node_pcdata ).set_value( szTemp ); 
@@ -874,7 +874,7 @@ void add_PhysiCell_cells_to_open_xml_pugi_v2( pugi::xml_document& xml_dom, std::
 		std::string name; 
 		std::string units; 
 		int size; 
-		int index = 1; 
+		int index = 0; 
 
 
 // compatibilty : first 17 entries 
@@ -1750,7 +1750,7 @@ void add_PhysiCell_cells_to_open_xml_pugi_v2( pugi::xml_document& xml_dom, std::
 		// fwrite( (char*) &( ID_temp ) , sizeof(double) , 1 , fp ); 
 
 		// name = "ID"; 
-		dTemp = (double) pCell->index;
+		dTemp = (double) pCell->ID;
 		std::fwrite( &( dTemp ) , sizeof(double) , 1 , fp ); 
 		// name = "position";    NOTE very different syntax for writing vectors!
         std::fwrite( pCell->position.data() , sizeof(double) , 3 , fp );
@@ -2098,29 +2098,13 @@ void write_attached_cells_graph( std::string filename )
 	std::ofstream of( filename , std::ios::out ); 
 	std::stringstream buffer; 
 
-	// for( int i=0 ; i < (*all_cells).size(); i++ )
-	// {
-	// 	buffer << (*all_cells)[i]->ID << ": " ; 
-	// 	int size = (*all_cells)[i]->state.attached_cells.size(); 
-	// 	for( int j=0 ; j < size; j++ )
-	// 	{
-	// 		buffer << (*all_cells)[i]->state.attached_cells[j]->ID; 
-	// 		if( j != size-1 )
-	// 		{ buffer << ","; }
-	// 	}
-	// 	if( i != (*all_cells).size()-1 )
-	// 	{ buffer << std::endl; }
-	// 	of << buffer.rdbuf(); 
-	// }
-	// of.close(); 
-
 	for( int i=0 ; i < (*all_cells).size(); i++ )
 	{
 		buffer << (*all_cells)[i]->ID << ": " ; 
-		int size = (*all_cells)[i]->state.spring_attachments.size(); 
+		int size = (*all_cells)[i]->state.attached_cells.size(); 
 		for( int j=0 ; j < size; j++ )
 		{
-			buffer << (*all_cells)[i]->state.spring_attachments[j]->ID; 
+			buffer << (*all_cells)[i]->state.attached_cells[j]->ID; 
 			if( j != size-1 )
 			{ buffer << ","; }
 		}
@@ -2129,7 +2113,6 @@ void write_attached_cells_graph( std::string filename )
 		of << buffer.rdbuf(); 
 	}
 	of.close(); 
-
 
 	return; 
 }

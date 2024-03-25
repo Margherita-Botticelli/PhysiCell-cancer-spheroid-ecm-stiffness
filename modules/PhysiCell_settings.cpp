@@ -597,8 +597,8 @@ void User_Parameters::read_from_pugixml( pugi::xml_node parent_node )
 		i++; 
 	}
 	
-	// std::cout << "User parameters in XML config file: " << std::endl; 
-	// std::cout << *this << std::endl; 
+	std::cout << "User parameters in XML config file: " << std::endl; 
+	std::cout << *this << std::endl; 
 	
 	return; 
 }
@@ -900,7 +900,7 @@ bool setup_microenvironment_from_XML( pugi::xml_node root_node )
 	}
 	
 	std::cout << activated_Dirichlet_boundary_detected << std::endl; 
-	// std::cout << "dc? " << default_microenvironment_options.outer_Dirichlet_conditions << std::endl; 
+	std::cout << "dc? " << default_microenvironment_options.outer_Dirichlet_conditions << std::endl; 
 	
 	// now, get the options 
 	node = xml_find_node( root_node , "microenvironment_setup" );
