@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --qos bbdefault
-#SBATCH --ntasks 50
+#SBATCH --ntasks 20
 #SBATCH --time 3000:0
 #SBATCH --account=spillf-systems-mechanobiology-health-disease
 
