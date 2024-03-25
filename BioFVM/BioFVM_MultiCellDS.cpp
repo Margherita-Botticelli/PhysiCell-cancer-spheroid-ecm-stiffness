@@ -963,7 +963,7 @@ void add_BioFVM_agents_to_open_xml_pugi( pugi::xml_document& xml_dom, std::strin
 	{
 		node = node.append_child( "cell" ); 
 		attrib = node.append_attribute( "ID" ); 
-		attrib.set_value(  all_basic_agents[i]->index ); 
+		attrib.set_value(  all_basic_agents[i]->ID ); 
 		
 		node = node.append_child( "phenotype_dataset" ); 
 		node = node.append_child( "phenotype" ); // add a type? 
