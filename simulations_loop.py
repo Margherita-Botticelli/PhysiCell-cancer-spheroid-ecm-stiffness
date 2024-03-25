@@ -20,10 +20,10 @@ if repeat_simulations:
 
 else:
     #### Define parameter values
-    seeds = [0,1,2,3,4,5,6,7,8,9]
+    seeds = [0,1,2,3,4]
     riboses = [0]#, 50, 200]
 
-    proliferations_val = [0.0007,0.00105,0.0014] #np.repeat([0.00035, 0.0007, 0.00105, 0.0014],6) # np.arange(0.02, 1, ).round(3)
+    proliferations_val = [0.0007, 0.0105, 0.0014] #np.repeat([0.00035, 0.0007, 0.00105, 0.0014],6) # np.arange(0.02, 1, ).round(3)
     mot_speeds_val = [0.5,0.75,1.0] #[0.3, 0.5, 0.7, 0.9, 1.1] #* 4
 
     repulsions_val = [2] * 3 + [4] * 4 + [8] * 5 + [16] * 6 + [32] * 7 + [64] * 8 + [128] * 8
@@ -89,7 +89,7 @@ else:
     if not directories:
         simulation_id = 0
     else:
-        simulation_ids = [int(name.split('_')[1]) for name in directories]
+        simulation_ids = [int(name.split('_')[2]) for name in directories]
         simulation_ids.sort()
         simulation_id = max(simulation_ids) + 1
 
@@ -205,8 +205,12 @@ for sim in simulations:
 
             #### START SIMULATION ####
             os.system('make') 
-            return_code = subprocess.Popen(f'./project')
-            results.append(return_code)
+            if len(results)%19==0 and len(results)!=0:
+                return_code = subprocess.run(f'./project')
+                results.append(return_code)
+            else:
+                return_code = subprocess.Popen(f'./project')
+                results.append(return_code)
 
             os.system('sleep 5') 
 
