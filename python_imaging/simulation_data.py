@@ -16,7 +16,7 @@ def reduce_mem_usage(df, verbose=True):
             c_min = df[col].min()
             c_max = df[col].max()
             if (str(col_type)[:3] == 'int') or (col in ['t', 'ID', 'maximum_number_of_attachments', 'persistence_time', 'overcrowding_threshold', 'attached_cells']):
-                print(f'{col=}',flush=True)
+                # print(f'{col=}',flush=True)
                 if c_min > np.iinfo(np.int8).min and c_max < np.iinfo(np.int8).max:
                     df[col] = df[col].astype(np.int8)
                 elif c_min > np.iinfo(np.int16).min and c_max < np.iinfo(np.int16).max:
@@ -121,7 +121,7 @@ def snapshot_data(ribose, simulation, seed,snapshot,data_folder):
 
 
 def simulation_data(data_folder_dir,simulation,ribose,seed):
-    replace = True
+    replace = False
  
     print(f"\n#### {ribose=}, {simulation=}, {seed=} ####\n", flush=True)
 
@@ -152,7 +152,7 @@ def simulation_data(data_folder_dir,simulation,ribose,seed):
             # Call function to get time and average total speeds values
             df_new = snapshot_data(ribose, simulation, seed, files[i].split('_')[0], data_folder)
 
-            df_new = reduce_mem_usage(df_new)
+            df_new = reduce_mem_usage(df_new,verbose=False)
 
             # df = pd.read_pickle(f'../dataframes_pickle/dataframe_rib{ribose}_{simulation}_{seed}.pkl')
             df_list.append(df_new)
