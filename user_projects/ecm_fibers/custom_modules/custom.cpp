@@ -973,10 +973,10 @@ void ecm_update_from_cell_velocity(Cell* pCell , Phenotype& phenotype , double d
 
 		for(int i = 0; i < 3; i++)
 		{
-			if (ddotf<0.0)
-			{
-				fiber_orientation = -1.0 * fiber_orientation;
-			}
+			// if (ddotf<0.0)
+			// {
+			// 	fiber_orientation = -1.0 * fiber_orientation;
+			// }
 			f_minus_d[i] = fiber_orientation[i] - norm_cell_motility[i]; 
 			ecm.ecm_voxels[voxel_index].ecm_fiber_alignment[i] -= dt * r_fiber * f_minus_d[i]; 
 		}
