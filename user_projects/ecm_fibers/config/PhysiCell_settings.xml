@@ -65,8 +65,8 @@
             </Dirichlet_options>
         </variable>
         <options>
-            <calculate_gradients>true</calculate_gradients>
-            <track_internalized_substrates_in_each_agent>true</track_internalized_substrates_in_each_agent>
+            <calculate_gradients>false</calculate_gradients>
+            <track_internalized_substrates_in_each_agent>false</track_internalized_substrates_in_each_agent>
             <initial_condition type="matlab" enabled="false">
                 <filename>./config/initial.mat</filename>
             </initial_condition>
@@ -232,7 +232,7 @@
         <ecm_dz type="double" units="micron" description="Length of ECM unit in z-direction">20</ecm_dz>
         <normalize_ecm_influenced_motility_vector type="bool" units="" description="">true</normalize_ecm_influenced_motility_vector>
         <cell_setup type="string" units="" description="Specifies the initial cell setup: single, random, lesion, cells at y = 0, circle of cells, or cells at left boundary/march">lesion</cell_setup>
-        <ecm_orientation_setup type="string" units="" description="Specifies the initial ECM orietation: random, horizontal, vertical, circular, starburst, or split">random</ecm_orientation_setup>
+        <ecm_orientation_setup type="string" units="" description="Specifies the initial ECM orietation: random, horizontal, vertical, circular, starburst, or split">horizontal</ecm_orientation_setup>
         <cell_properties type="double" units="dimensionless" description="Cell properties">0</cell_properties>
         <enable_ecm_outputs type="bool" units="" description="">true</enable_ecm_outputs>
         <nearest_voxel_remodeling type="string" units="dimensionless" description="nearest voxel for ECM remodelling at cell position (position) or at membrane point (membrane)">position</nearest_voxel_remodeling>
