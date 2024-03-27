@@ -118,6 +118,8 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, show_p
     ECM_x = mcds.data['ecm']['ECM_fields']['x_fiber_orientation'][:, :, 0]
     ECM_y = mcds.data['ecm']['ECM_fields']['y_fiber_orientation'][:, :, 0]
 
+    ECM_matrix = np.stack([ECM_x,ECM_y])
+    print(ECM_matrix.max(), ECM_matrix.min())
     # mask out zero vectors
     mask = plane_anisotropy > 0.0001
 
@@ -142,10 +144,11 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, show_p
     # cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["white","lightsalmon","sienna"])
     cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["white","#DA70D6"])
 
-    # plt.pcolormesh(xx_ecm,yy_ecm,ecm_density[:,:],cmap=cmap,vmin=0,vmax=1)
-    plt.pcolormesh(xx_ecm,yy_ecm,plane_anisotropy[:,:],cmap=cmap,vmin=0,vmax=1)
+    plt.pcolormesh(xx_ecm,yy_ecm,ecm_density[:,:],cmap=cmap,vmin=0,vmax=1)
+    plt.colorbar(shrink=0.7,label='ECM density')
 
-    plt.colorbar(shrink=0.7)
+    # plt.pcolormesh(xx_ecm,yy_ecm,plane_anisotropy[:,:],cmap=cmap,vmin=0,vmax=1)
+    # plt.colorbar(shrink=0.7,label='ECM anisotropy')
 
     # add ECM orientation vectors unscaled by anistorpy ###
     plt.quiver(xx, yy, 20*ECM_x, 20*ECM_y,
