@@ -12,6 +12,7 @@ from plots_adh_vs_rep import plots_adh_vs_rep
 from plots_ecm_remodeling import plots_ecm_remodeling
 from spheroid_area_function import spheroid_area_function
 from cell_plus_environment_movie_maker import create_plot
+from cell_velocities import cell_velocities
 
 if __name__ == '__main__':
     
@@ -22,7 +23,7 @@ if __name__ == '__main__':
     plt.style.use('ggplot')
     plt.style.use('seaborn-v0_8-colorblind')
 
-    proj = 'tests' #'ecm_density'
+    proj = 'ecm_density' # 'tests' # 
 
     #### Save folder
     save_folder = f'../results/{proj}/'  
@@ -37,7 +38,7 @@ if __name__ == '__main__':
     riboses = [0]#,50,200]
 
     #### Random seeds
-    n_seeds = 1
+    n_seeds = 5
     seeds = list(range(0,n_seeds))
 
     #### Simulations
@@ -63,9 +64,10 @@ if __name__ == '__main__':
     # table16 = list(range(718,743))
 
     #### Table for ECM density only model
-    table1 = list(range(0,41))
+    table1 = list(range(0,25))
+    table2 = list(range(25,50))
 
-    simulations = [2]
+    simulations = table2
     # simulation_name = f'{simulations[0]}_to_{simulations[-1]}'
     simulation_name = '_'.join(str(s) for s in simulations)
     
@@ -75,9 +77,9 @@ if __name__ == '__main__':
     seeds_list = seeds * len(simulations) * len(riboses)
     data_folder_list = [data_folder] * len(seeds) * len(simulations) * len(riboses)
 
-    # Parallel(n_jobs=-1)(delayed(simulation_data)(data_folder,simulation,ribose,seed) for data_folder,simulation,ribose,seed in zip(data_folder_list,simulations_list,riboses_list,seeds_list))
+    Parallel(n_jobs=3)(delayed(simulation_data)(data_folder,simulation,ribose,seed) for data_folder,simulation,ribose,seed in zip(data_folder_list,simulations_list,riboses_list,seeds_list))
 
-    simulation_data(data_folder,simulations[0],riboses[0],seeds[0])
+    # simulation_data(data_folder,simulations[0],riboses[0],seeds[0])
 
     print('Parallel end\n', flush=True)
 
@@ -116,7 +118,7 @@ if __name__ == '__main__':
     # ########## SPHEROID AREA OVER TIME PLOT ###########
     # mpl.interactive(True)
 
-    # max_spheroid_area = df[(df['t'] == 5000) & (df['ID'] == 0)]['spheroid_area'].max()
+    # max_spheroid_area = df[(df['t'] == 5760) & (df['ID'] == 0)]['spheroid_area'].max()
     # max_spheroid_area = round(max_spheroid_area,-4)+2000
     # # print(f'max_spheroid_area:{max_spheroid_area}\n',flush=True)
 
@@ -146,14 +148,14 @@ if __name__ == '__main__':
     # plt.close('all')
             
 
-    # ######## ADHESION VS REPULSION HEATMAP PLOT #########
-    # for rib in riboses:
-    #     data = df[(df['ribose'] == rib) & (df['ID'] == 0)]
-    #     plots_adh_vs_rep(data, simulation_name, save_folder)
-    #     # print('Plots adh vs rep finishes\n', flush=True)
-    #     plt.close('all')
+    ######## ADHESION VS REPULSION HEATMAP PLOT #########
+    for rib in riboses:
+        data = df[(df['ribose'] == rib) & (df['ID'] == 0)]
+        plots_adh_vs_rep(data, simulation_name, save_folder)
+        # print('Plots adh vs rep finishes\n', flush=True)
+        plt.close('all')
 
-    # plt.close('all')
+    plt.close('all')
 
     
     # ######## ECM REMODELING HEATMAP PLOT #########
@@ -174,26 +176,32 @@ if __name__ == '__main__':
     #     # plt.close()
 
 
-    ######### TIME POINT IMAGE ##############
-    times = [5760]
+    # ######### TIME POINT IMAGE ##############
+    # times = [1440,2880,5760]
 
-    for sim in simulations:
-        for rib in riboses:
-            for t in times:
-                seed = 0
-                data = df[(df['simulation'] == sim) & (df['ribose'] == rib) & (df['seed'] == seed) & (df['t'] == t)]
-                # spheroid_area_function(data,save_folder=save_folder,figure=True)
-                # pd.set_option('display.max_columns', None)
+    # for sim in simulations:
+    #     for rib in riboses:
+    #         for t in times:
+    #             seed = 0
+    #             data = df[(df['simulation'] == sim) & (df['ribose'] == rib) & (df['seed'] == seed) & (df['t'] == t)]
+    #             # spheroid_area_function(data,save_folder=save_folder,figure=True)
+    #             # pd.set_option('display.max_columns', None)
 
-                print('data frame \n', flush=True)
-                print(data, flush = True)
+    #             print('data frame \n', flush=True)
+    #             print(data, flush = True)
 
-                time_step = data[data['ID']==0].index.values.astype(int)[0]
-                snapshot = 'output' + '{:08d}'.format(time_step)
-                data_folder_sim = data_folder + f'output_rib{rib}_{sim}_{seed}/'
-                save_name = save_folder + f'images/full_image_rib{rib}_{sim}_{seed}_t{int(t)}.png'
+    #             time_step = data[data['ID']==0].index.values.astype(int)[0]
+    #             snapshot = 'output' + '{:08d}'.format(time_step)
+    #             data_folder_sim = data_folder + f'output_rib{rib}_{sim}_{seed}/'
+    #             save_name = save_folder + f'images/full_image_rib{rib}_{sim}_{seed}_t{int(t)}.png'
 
-                print(f'{save_name=}\n', flush=True)
-                create_plot(data, snapshot, data_folder_sim, save_name, output_plot=True, show_plot=False)
+    #             print(f'{save_name=}\n', flush=True)
+    #             create_plot(data, snapshot, data_folder_sim, save_name, output_plot=True, show_plot=False)
 
 
+    # ######### CELL VELOCITIES ##############
+    # for sim in simulations:
+    #     for rib in riboses:
+    #         data = df[(df['simulation'] == sim) & (df['ribose'] == rib)]
+    #         cell_velocities(data,save_folder)
+    #     # plt.close()
