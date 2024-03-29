@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn
 
 
-def plots_spheroid_area_growth(data,fig_num,save_folder,simulation_name):
+def plots_spheroid_area_growth(data,save_folder):
 
     #################### PLOT SPHEROID AREA SLOPES #############################
 
