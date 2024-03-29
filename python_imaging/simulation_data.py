@@ -121,6 +121,7 @@ def snapshot_data(ribose, simulation, seed,snapshot,data_folder):
 
 
 def simulation_data(data_folder_dir,simulation,ribose,seed):
+
     replace = False
  
     print(f"\n#### {ribose=}, {simulation=}, {seed=} ####\n", flush=True)
@@ -161,10 +162,10 @@ def simulation_data(data_folder_dir,simulation,ribose,seed):
         df = pd.concat(df_list, copy=False, axis=0)
         
         # pd.set_option('display.max_rows', None)
-        pd.set_option('display.max_columns', None)
+        # pd.set_option('display.max_columns', None)
         
-        print('data frame \n', flush=True)
-        print(df, flush = True)
+        # print('data frame \n', flush=True)
+        # print(df, flush = True)
 
         df.to_pickle(data_folder + f'dataframe_rib{ribose}_{simulation}_{seed}.pkl')
 
