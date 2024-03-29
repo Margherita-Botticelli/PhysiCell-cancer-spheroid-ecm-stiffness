@@ -20,11 +20,11 @@ if repeat_simulations:
 
 else:
     #### Define parameter values
-    seeds = [0,1,2,3,4]
+    seeds = [0]
     riboses = [0]#, 50, 200]
 
-    proliferations_val = [0.0007]#[0.0007, 0.0105, 0.0014] #np.repeat([0.00035, 0.0007, 0.00105, 0.0014],6) # np.arange(0.02, 1, ).round(3)
-    mot_speeds_val = [0.5,0.75,1.0] #[0.3, 0.5, 0.7, 0.9, 1.1] #* 4
+    proliferations_val = [0.00105]#[0.0007, 0.00105, 0.0014] #np.repeat([0.00035, 0.0007, 0.00105, 0.0014],6) # np.arange(0.02, 1, ).round(3)
+    mot_speeds_val = [0.75] #[0.5, 0.75, 1] #[0.3, 0.5, 0.7, 0.9, 1.1] #* 4
 
     repulsions_val = [4] * 3 + [8] * 4 + [16] * 5 + [32] * 6 + [64] * 7 #+ [128] * 7
                       
@@ -33,6 +33,8 @@ else:
                      0.5, 1, 2, 4, 8, 
                      0.5, 1, 2, 4, 8, 16,
                      0.5, 1, 2, 4, 8, 16, 32] 
+    
+
     
     if len(adhesions_val) != len(repulsions_val):
         print(f'Adhesion and repulsion lists have different lengths', flush=True)
@@ -89,7 +91,7 @@ else:
     else:
         simulation_ids = [int(name.split('_')[2]) for name in directories]
         simulation_ids.sort()
-        simulation_id = 0#max(simulation_ids) + 1
+        simulation_id = 100#max(simulation_ids) + 1
 
     print(f'simulations: {simulation_id} to {simulation_id + num_simulations -1} ')
 
@@ -203,7 +205,10 @@ for sim in simulations:
 
             #### START SIMULATION ####
             os.system('make') 
-            if len(results)%5==0:
+            if len(results)==0:
+                return_code = subprocess.Popen(f'./project')
+                results.append(return_code)
+            elif len(results)%3==0:
                 return_code = subprocess.run(f'./project')
                 results.append(return_code)
             else:
