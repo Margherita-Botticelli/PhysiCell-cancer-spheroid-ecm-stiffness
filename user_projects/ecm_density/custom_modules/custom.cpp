@@ -889,11 +889,16 @@ void ecm_update_from_cell_velocity(Cell* pCell , Phenotype& phenotype , double d
 	// 	std::cout<<"r_density = "<<r_density<<std::endl;
 
 	// Set density target to zero
-	// double density_target = 0;
-	double density_target = pCell->custom_data["rho_ideal"];
+	double density_target = 0;
+	// double density_target = pCell->custom_data["rho_ideal"];
 
 	// Get threshold neighbours parameter
 	int overcrowding_threshold = pCell->custom_data["overcrowding_threshold"];
+	
+	if(pCell->state.neighbors.size() < overcrowding_threshold)
+	{
+		density_target = pCell->custom_data["rho_ideal"];
+	}
 
 	//Pick voxel closest to cell's membrane in direction of movement
 	std::vector<double> direction = {pCell->custom_data["total_velocity_x"], pCell->custom_data["total_velocity_y"], pCell->custom_data["total_velocity_z"]};
@@ -904,17 +909,6 @@ void ecm_update_from_cell_velocity(Cell* pCell , Phenotype& phenotype , double d
 	pCell->custom_data["point_on_membrane_x"] = position_membrane[0];
 	pCell->custom_data["point_on_membrane_y"] = position_membrane[1];
 	pCell->custom_data["point_on_membrane_z"] = position_membrane[2];
-
-
-	// if(pCell->state.neighbors.size() < overcrowding_threshold)
-
-	// 	density_target = pCell->custom_data["rho_ideal"];
-
-	// 	if(parameters.strings("nearest_voxel_remodeling") == "membrane")
-	// 	{
-	// 		// Computing the index of the voxel at that position
-	// 		voxel_index = microenvironment.nearest_voxel_index( position_membrane );
-	// 	}
 
 	if(parameters.strings("nearest_voxel_remodeling") == "membrane")
 	{
