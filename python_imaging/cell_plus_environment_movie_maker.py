@@ -119,7 +119,7 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, show_p
     ECM_y = mcds.data['ecm']['ECM_fields']['y_fiber_orientation'][:, :, 0]
 
     ECM_matrix = np.stack([ECM_x,ECM_y])
-    print(ECM_matrix.max(), ECM_matrix.min())
+    # print(ECM_matrix.max(), ECM_matrix.min())
     # mask out zero vectors
     mask = plane_anisotropy > 0.0001
 
@@ -150,9 +150,9 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, show_p
     # plt.pcolormesh(xx_ecm,yy_ecm,plane_anisotropy[:,:],cmap=cmap,vmin=0,vmax=1)
     # plt.colorbar(shrink=0.7,label='ECM anisotropy')
 
-    # add ECM orientation vectors unscaled by anistorpy ###
-    plt.quiver(xx, yy, 20*ECM_x, 20*ECM_y,
-    pivot='middle', angles='xy', scale_units='xy', scale=1)#, headwidth=0,headlength=0, headaxislength=0)
+    # # add ECM orientation vectors unscaled by anistorpy ###
+    # plt.quiver(xx, yy, 20*ECM_x, 20*ECM_y,
+    # pivot='middle', angles='xy', scale_units='xy', scale=1)#, headwidth=0,headlength=0, headaxislength=0)
 
     # add contour layer
     # cs = plt.contourf(xx, yy, plane_oxy, cmap="Greens_r", levels=levels_o2)
@@ -180,8 +180,8 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, show_p
     plt.ylim(-edge, edge)
     plt.xlim(-edge, edge)
 
-    plt.title(f'{prolif=}, {cell_adh=}, {cell_rep=}, {max_mot_speed=}\n{r_density=}, {r_orientation=}, {r_anisotropy=}\nt={int(t)}',fontsize=12)
-
+    # plt.title(f'{prolif=}, {cell_adh=}, {cell_rep=}, {max_mot_speed=}\n{r_density=}, {r_orientation=}, {r_anisotropy=}\nt={int(t)}',fontsize=12)
+    plt.title(f'{prolif=}, {max_mot_speed=}\n{cell_adh=}, {cell_rep=}, {r_density=}\nt={int(t)}',fontsize=12)
     #### Plot style
     plt.style.use('ggplot')
     plt.style.use('seaborn-v0_8-colorblind')
