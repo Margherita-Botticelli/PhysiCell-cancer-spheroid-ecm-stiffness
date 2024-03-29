@@ -12,7 +12,7 @@ def plots_adh_vs_rep(data, simulation_name, save_folder):
     fig = plt.figure()
 
     ribose = data['ribose'].iloc[0]
-    t = np.unique(data['t']).astype(float)
+    t = np.unique(data['t']).astype(int)
     prolif = round(float(data['prolif'].iloc[0]),5)
     max_mot_speed = data['max_mot_speed'].iloc[0]
 
@@ -59,7 +59,7 @@ def plots_adh_vs_rep(data, simulation_name, save_folder):
 
         annot_mean = "%.2f" % area_mean
         annot_std = "%.2f" % area_std
-        annot = annot_mean + '\n' + u'\u00B1' + annot_std
+        annot = annot_mean #+ '\n' + u'\u00B1' + annot_std
         annot_df[adh][rep] = annot
     
     print(annot_df,flush=True)
@@ -106,8 +106,8 @@ def plots_adh_vs_rep(data, simulation_name, save_folder):
     # print(df,flush=True)
 
 
-    ax = seaborn.heatmap(df,cmap=cmap,vmin=1, vmax=7,annot = annot_arr, fmt="s", cbar_kws={'label': 'Growth'})
-    # ax = seaborn.heatmap(df,cmap=cmap,vmin=1, vmax=7, cbar_kws={'label': 'Growth'})
+    ax = seaborn.heatmap(df,cmap=cmap,vmin=0, vmax=7,annot = annot_arr, fmt="s", cbar_kws={'label': 'Growth'})
+    # ax = seaborn.heatmap(df,cmap=cmap,vmin=0, vmax=7,annot=True,fmt='.2f', cbar_kws={'label': 'Growth'})
 
     ax.figure.axes[-1].yaxis.set_label_position('left')
 
