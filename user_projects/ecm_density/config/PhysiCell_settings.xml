@@ -33,7 +33,7 @@
             <enable>true</enable>
         </full_data>
         <SVG>
-            <interval units="min">10</interval>
+            <interval units="min">720</interval>
             <enable>false</enable>
         </SVG>
         <legacy_data>
