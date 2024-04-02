@@ -786,9 +786,9 @@ void Microenvironment::auto_choose_diffusion_decay_solver( void )
  
 void Microenvironment::display_information( std::ostream& os )
 {
-	os << std::endl << "Microenvironment summary: " << name << ": " << std::endl; 
-	mesh.display_information( os ); 
-	os << "Densities: (" << number_of_densities() << " total)" << std::endl; 
+	// os << std::endl << "Microenvironment summary: " << name << ": " << std::endl; 
+	// mesh.display_information( os ); 
+	// os << "Densities: (" << number_of_densities() << " total)" << std::endl; 
 	for( unsigned int i = 0 ; i < density_names.size() ; i++ )
 	{
 		os << "   " << density_names[i] << ":" << std::endl
@@ -1537,7 +1537,7 @@ void initialize_microenvironment( void )
 	// 	microenvironment.set_substrate_dirichlet_activation( i , default_microenvironment_options.Dirichlet_activation_vector[i] ); 
 	// }
 	
-	microenvironment.display_information( std::cout );
+	// microenvironment.display_information( std::cout );
 	return;
 }
 
