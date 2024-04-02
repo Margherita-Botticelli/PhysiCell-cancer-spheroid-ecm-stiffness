@@ -534,10 +534,10 @@ void Parameters<T>::add_parameter( Parameter<T> param )
 
 std::ostream& operator<<( std::ostream& os , const User_Parameters up )
 {
-	os << "Bool parameters:: " << std::endl << up.bools << std::endl; 
-	os << "Int parameters:: " << std::endl << up.ints << std::endl; 
-	os << "Double parameters:: " << std::endl << up.doubles << std::endl; 
-	os << "String parameters:: " << std::endl << up.strings << std::endl; 
+	// os << "Bool parameters:: " << std::endl << up.bools << std::endl; 
+	// os << "Int parameters:: " << std::endl << up.ints << std::endl; 
+	// os << "Double parameters:: " << std::endl << up.doubles << std::endl; 
+	// os << "String parameters:: " << std::endl << up.strings << std::endl; 
 	return os; 
 }
 
