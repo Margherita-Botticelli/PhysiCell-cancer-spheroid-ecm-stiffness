@@ -40,6 +40,10 @@ if __name__ == '__main__':
     table8 = list(range(175,200))
     table9 = list(range(200,225))
 
+    #### ECM degradation 0.005
+    table10 = list(range(225,250))
+
+
     #### Choose simulations
     simulations_multi = [table1,table2,table3,table4,table5,table6,table7,table8,table9]
     
@@ -115,17 +119,31 @@ if __name__ == '__main__':
         #         plots_spheroid_growth_over_time(data,save_folder)
 
         #     plt.close('all')
-        
+        data_spheroid_growth = pd.DataFrame()
+        data_cluster = pd.DataFrame()
+        data_delaunay = pd.DataFrame()
+        data_cell_number = pd.DataFrame()
 
-        ######## ADHESION VS REPULSION HEATMAP PLOT #########
+        ######## ADHESION VS REPULSION HEATMAP PLOTS #########
+        timepoints = [0]#[24*60,72*60,96*60]
         for rib in riboses:
-            data_spheroid_growth = df[(df['ribose'] == rib) & (df['ID'] == 0)]
-            plots_adh_vs_rep_spheroid_growth(data_spheroid_growth, simulation_name, save_folder)
+            for timepoint in timepoints:
+                data_spheroid_growth = df[(df['ribose'] == rib) & (df['ID'] == 0) & ((df['t'] == 0) | (df['t'] == timepoint))]
+                plots_adh_vs_rep_spheroid_growth(data_spheroid_growth, simulation_name, save_folder)
+                print('plots_adh_vs_rep_spheroid_growth done!',flush=True)
 
-            data_cluster = df[(df['ribose'] == rib) & (df['t'] == 5760)]
-            plots_adh_vs_rep_clusters(data_cluster, simulation_name, save_folder)
-            # print('Plots adh vs rep finishes\n', flush=True)
-            plt.close('all')
+                # data_cluster = df[(df['ribose'] == rib) & (df['t'] == 5760)]
+                # plots_adh_vs_rep_clusters(data_cluster, simulation_name, save_folder)
+                # print('plots_adh_vs_rep_clusters done!',flush=True)
+
+                data_delaunay = df[(df['ribose'] == rib) & (df['t'] == timepoint)]
+                plots_adh_vs_rep_delaunay(data_delaunay, simulation_name, save_folder)
+                print('plots_adh_vs_rep_delaunay done!',flush=True)
+
+                data_cell_number = df[(df['ribose'] == rib) & (df['t'] == timepoint)]
+                plots_adh_vs_rep_cell_number(data_cell_number, simulation_name, save_folder)
+                print('plots_adh_vs_rep_cell_number done!',flush=True)
+
 
         plt.close('all')
 
