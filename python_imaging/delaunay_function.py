@@ -7,7 +7,7 @@ from sklearn.cluster import AgglomerativeClustering as AC
 from skimage import io, draw, util, color
 import seaborn
 
-def delaunay_distance_function(data,save_folder,figure=False):
+def delaunay_distance_function(data,save_folder='../results/',figure=False):
 
     #################### CLUSTERING ALGORITHM #############################
 
