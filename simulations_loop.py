@@ -20,21 +20,23 @@ if repeat_simulations:
 
 else:
     #### Define parameter values
-    seeds = [0]
+    seeds = [0,1,2,3,4]
     riboses = [0]#, 50, 200]
 
-    proliferations_val = [0.00105]#[0.0007, 0.00105, 0.0014] #np.repeat([0.00035, 0.0007, 0.00105, 0.0014],6) # np.arange(0.02, 1, ).round(3)
-    mot_speeds_val = [0.75] #[0.5, 0.75, 1] #[0.3, 0.5, 0.7, 0.9, 1.1] #* 4
+    proliferations_val = [0.0025]#[0.0007, 0.00105, 0.0014] #np.repeat([0.00035, 0.0007, 0.00105, 0.0014],6) # np.arange(0.02, 1, ).round(3)
+    mot_speeds_val = [0.25,0.5,0.75] #[0.5, 0.75, 1] #[0.75] #[0.3, 0.5, 0.7, 0.9, 1.1] #* 4
 
-    repulsions_val = [4] * 3 + [8] * 4 + [16] * 5 + [32] * 6 + [64] * 7 #+ [128] * 7
+    # repulsions_val = [4] * 3 + [8] * 4 + [16] * 5 + [32] * 6 + [64] * 7 #+ [128] * 7
                       
-    adhesions_val = [0.5, 1, 2, 
-                     0.5, 1, 2, 4, 
-                     0.5, 1, 2, 4, 8, 
-                     0.5, 1, 2, 4, 8, 16,
-                     0.5, 1, 2, 4, 8, 16, 32] 
+    # adhesions_val = [0.5, 1, 2, 
+    #                  0.5, 1, 2, 4, 
+    #                  0.5, 1, 2, 4, 8, 
+    #                  0.5, 1, 2, 4, 8, 16,
+    #                  0.5, 1, 2, 4, 8, 16, 32] 
     
+    repulsions_val = [64] * 2
 
+    adhesions_val = [8,16] 
     
     if len(adhesions_val) != len(repulsions_val):
         print(f'Adhesion and repulsion lists have different lengths', flush=True)
@@ -91,7 +93,7 @@ else:
     else:
         simulation_ids = [int(name.split('_')[2]) for name in directories]
         simulation_ids.sort()
-        simulation_id = 100#max(simulation_ids) + 1
+        simulation_id = 4#max(simulation_ids) + 1
 
     print(f'simulations: {simulation_id} to {simulation_id + num_simulations -1} ')
 
@@ -186,7 +188,7 @@ for sim in simulations:
                 ecm_density_rate.text = str(r_density)
                 anisotropy_increase_rate.text = '0'#str(r_anisotropy)
                 # ecm_sensitivity.text = '0'
-                # initial_anisotropy.text = '0'
+                initial_anisotropy.text = '0'
                 # rate.text = str(r_f0)
                 # rate.text = str(r_density)
 
@@ -208,7 +210,7 @@ for sim in simulations:
             if len(results)==0:
                 return_code = subprocess.Popen(f'./project')
                 results.append(return_code)
-            elif len(results)%3==0:
+            elif len(results)%19==0:
                 return_code = subprocess.run(f'./project')
                 results.append(return_code)
             else:
@@ -219,12 +221,21 @@ for sim in simulations:
 
     i += 1
 
+# Iterate through all return codes, only exit when all are done. sp.run always
+# returns True because we know it waits until finishing
 while True:
     temp_results = []
     for x in results:
-        res = x.poll()
+        if isinstance(x,subprocess.CompletedProcess):
+            res = x.returncode
+        else:
+            res = x.poll()
+
+        # If encounter a return code of not 0, exit program immedietly
         if not(res == None or res == 0):
             sys.exit(1)
+            print('Non-zero exit code found, exiting...', flush=True)
+
         temp_results.append(res == 0)
     if all(temp_results):
         break
