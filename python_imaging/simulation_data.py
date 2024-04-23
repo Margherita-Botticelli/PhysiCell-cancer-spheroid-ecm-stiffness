@@ -4,6 +4,7 @@ import pandas as pd
 import xml.etree.ElementTree as ET
 import numpy as np
 from spheroid_area_function import *
+from delaunay_function import *
 
 # Reduce memory usage
 def reduce_mem_usage(df, verbose=True):
@@ -109,6 +110,10 @@ def snapshot_data(ribose, simulation, seed,snapshot,data_folder):
     spheroid_area = spheroid_area_function(cell_df)
     cell_df['spheroid_area'] = spheroid_area
 
+    #### Call delaunday distance function
+    delaunay_distance = delaunay_distance_function(cell_df)
+    cell_df['delaunay_distance'] = delaunay_distance
+
     index = int(snapshot.replace("output", "") )
     # print(f'{index=}',flush=True)
 
@@ -120,10 +125,8 @@ def snapshot_data(ribose, simulation, seed,snapshot,data_folder):
     return cell_df
 
 
-def simulation_data(data_folder_dir,simulation,ribose,seed):
+def simulation_data(data_folder_dir,simulation,ribose,seed,replace=False):
 
-    replace = False
- 
     print(f"\n#### {ribose=}, {simulation=}, {seed=} ####\n", flush=True)
 
     if((os.path.exists(data_folder_dir + f'output_rib{ribose}_{simulation}_{seed}/dataframe_rib{ribose}_{simulation}_{seed}.pkl')) and (replace==False)):
