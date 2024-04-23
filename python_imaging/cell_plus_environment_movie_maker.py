@@ -13,6 +13,7 @@ import matplotlib as mpl
 from matplotlib.patches import Circle
 import imageio
 import os, sys, re
+from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 
 def print_stats(arr):
     """
@@ -111,8 +112,8 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, show_p
     # Anisotropy strictly runs between 0 and 1. Element by element mulitplication produces weighted lengths between 0 - 1
     # for vizualization
 
-    scaled_ECM_x = np.multiply(mcds.data['ecm']['ECM_fields']['x_fiber_orientation'][:, :, 0], plane_anisotropy)
-    scaled_ECM_y = np.multiply(mcds.data['ecm']['ECM_fields']['y_fiber_orientation'][:, :, 0], plane_anisotropy)
+    # scaled_ECM_x = np.multiply(mcds.data['ecm']['ECM_fields']['x_fiber_orientation'][:, :, 0], plane_anisotropy)
+    # scaled_ECM_y = np.multiply(mcds.data['ecm']['ECM_fields']['y_fiber_orientation'][:, :, 0], plane_anisotropy)
 
     # if we want the arrows the same length instead
     ECM_x = mcds.data['ecm']['ECM_fields']['x_fiber_orientation'][:, :, 0]
@@ -137,15 +138,15 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, show_p
     ax = plt.gca()
     
     # fig, ax = plt.subplots(figsize=(12, 12))
-    plt.ylim(-edge, edge)
-    plt.xlim(-edge, edge)
-    
+
     # ECM density
-    # cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["white","lightsalmon","sienna"])
-    cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["white","#DA70D6"])
+    cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["white","lightsalmon","sienna"])
+    # cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["white","#DA70D6"])
 
     plt.pcolormesh(xx_ecm,yy_ecm,ecm_density[:,:],cmap=cmap,vmin=0,vmax=1)
     plt.colorbar(shrink=0.7,label='ECM density')
+    ax.figure.axes[-1].yaxis.set_label_position('left')
+
 
     # plt.pcolormesh(xx_ecm,yy_ecm,plane_anisotropy[:,:],cmap=cmap,vmin=0,vmax=1)
     # plt.colorbar(shrink=0.7,label='ECM anisotropy')
@@ -161,12 +162,24 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, show_p
     # Add cells layer
     for j in data['ID'].tolist():
         circ = Circle((data[data['ID']==j]['position_x'], data[data['ID']==j]['position_y']),
-                        radius=data[data['ID']==j]['radius'], alpha=0.5, edgecolor='black',facecolor='green')
+                        radius=data[data['ID']==j]['radius'], alpha=0.7, edgecolor='black',facecolor='green')
         ax.add_artist(circ)
 
+    scalebar = AnchoredSizeBar(ax.transData,
+                            100, r'100 [$\mu$m]', 'lower right', 
+                            pad=0.1,
+                            color='white',
+                            frameon=False,
+                            size_vertical=1)
+    ax.add_artist(scalebar)
+
+
+    text_kwargs = dict(ha='center', va='top', fontsize=12, color='white')
+    plt.text(0, 450, f'Time {int(t/60)}h', **text_kwargs)
+
     # Labels and title (will need removed for journal - they will be added manually)
-    ax.set_xlabel('x [micron]',fontsize=12)
-    ax.set_ylabel('y [micron]',fontsize=12)
+    # ax.set_xlabel(r'x [$\mu$m]',fontsize=12)
+    # ax.set_ylabel(r'y [$\mu$m]',fontsize=12)
     #fig.colorbar(cs, ax=ax)
 
     #plt.title('ribose concentration={r}mM\n t={t}min, cell speed={speed}micron/min'.format(r=ribose_concentration,t=t,speed=round(speed,2)))
@@ -175,13 +188,14 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, show_p
     ax.axis('scaled')
     # fig.tight_layout()
 
-    plt.xticks(np.arange(-edge,edge+1, step=100),fontsize=12,rotation=45)
-    plt.yticks(np.arange(-edge,edge+1, step=100),fontsize=12)
+    plt.xticks([])#(np.arange(-edge,edge+1, step=100),fontsize=12,rotation=45)
+    plt.yticks([])#(np.arange(-edge,edge+1, step=100),fontsize=12)
     plt.ylim(-edge, edge)
     plt.xlim(-edge, edge)
 
     # plt.title(f'{prolif=}, {cell_adh=}, {cell_rep=}, {max_mot_speed=}\n{r_density=}, {r_orientation=}, {r_anisotropy=}\nt={int(t)}',fontsize=12)
-    plt.title(f'{prolif=}, {max_mot_speed=}\n{cell_adh=}, {cell_rep=}, {r_density=}\nt={int(t)}',fontsize=12)
+    plt.title(f'{prolif=}, {max_mot_speed=}\n{cell_adh=}, {cell_rep=}, {r_density=}',fontsize=10)
+    
     #### Plot style
     plt.style.use('ggplot')
     plt.style.use('seaborn-v0_8-colorblind')
