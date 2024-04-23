@@ -87,8 +87,8 @@ def plots_adh_vs_rep_spheroid_growth(data, simulation_name, save_folder):
     ax.figure.axes[-1].yaxis.set_label_position('left')
 
     ###  Set axis labels
-    plt.ylabel("Repulsion strength",fontsize=15)
-    plt.xlabel("Adhesion strength",fontsize=15)
+    plt.ylabel("Repulsion strength")
+    plt.xlabel("Adhesion strength")
 
     ### Set title, overlaied plots
     plt.title(r'$\bf{Spheroid\,growth\,relative\,to\,t_0}$'+
@@ -187,22 +187,14 @@ def plots_adh_vs_rep_clusters(data, simulation_name, save_folder):
     ax.figure.axes[-1].yaxis.set_label_position('left')
 
     ###  Set axis labels
-    plt.ylabel("Repulsion strength",fontsize=15)
-    plt.xlabel("Adhesion strength",fontsize=15)
-    # if len(np.unique(cell_adh))<len(np.unique(cell_rep)):
-    #     plt.ylabel("Adhesion strength",fontsize=15)
-    #     plt.xlabel("Ratio repulsion/adhesion",fontsize=15)
-    # else:
-    #     plt.ylabel("Repulsion strength",fontsize=15)
-    #     plt.xlabel("Ratio adhesion/repulsion",fontsize=15)
-    
+    plt.ylabel("Repulsion strength")
+    plt.xlabel("Adhesion strength")
     
     ### Set title, overlaied plots
     plt.title(r'$\bf{Percentage\,of\,cells\,in\,main\,cluster}$'+
               f'\nProlif rate={prolif}, max mot speed={max_mot_speed}' + 
               f'\nt={max(t)/60}h', fontsize = 12)
     
-
     plt.savefig(save_folder + f'plots/adh_vs_rep_cluster_rib{ribose}_{simulation_name}_t{int(max(t)/60)}.png', bbox_inches = "tight")
 
     plt.close()
@@ -290,27 +282,19 @@ def plots_adh_vs_rep_delaunay(data, simulation_name, save_folder):
     # print(df,flush=True)
 
 
-    ax = seaborn.heatmap(df,cmap=cmap,vmin=0, vmax=35,annot = annot_arr, fmt="s", cbar_kws={'label': 'Growth'})
+    ax = seaborn.heatmap(df,cmap=cmap,vmin=0, vmax=35,annot = annot_arr, fmt="s", cbar_kws={'label': 'Delaunay mean distance'})
     # ax = seaborn.heatmap(df,cmap=cmap,vmin=0, vmax=7,annot=True,fmt='.2f', cbar_kws={'label': 'Growth'})
 
     ax.figure.axes[-1].yaxis.set_label_position('left')
 
     ###  Set axis labels
-    plt.ylabel("Repulsion strength",fontsize=15)
-    plt.xlabel("Adhesion strength",fontsize=15)
-    # if len(np.unique(cell_adh))<len(np.unique(cell_rep)):
-    #     plt.ylabel("Adhesion strength",fontsize=15)
-    #     plt.xlabel("Ratio repulsion/adhesion",fontsize=15)
-    # else:
-    #     plt.ylabel("Repulsion strength",fontsize=15)
-    #     plt.xlabel("Ratio adhesion/repulsion",fontsize=15)
-    
+    plt.ylabel("Repulsion strength")
+    plt.xlabel("Adhesion strength")
     
     ### Set title, overlaied plots
     plt.title(r'$\bf{Mean\,Delaunay\,distance}$' +
               f'\nProlif rate={prolif}, max mot speed={max_mot_speed}' + 
               f'\nt={max(t)/60}h', fontsize = 12)
-
 
     plt.savefig(save_folder + f'plots/adh_vs_rep_delaunay_rib{ribose}_{simulation_name}_t{int(max(t)/60)}.png', bbox_inches = "tight")
     plt.close()
@@ -404,8 +388,8 @@ def plots_adh_vs_rep_cell_number(data, simulation_name, save_folder):
     ax.figure.axes[-1].yaxis.set_label_position('left')
 
     ###  Set axis labels
-    plt.ylabel("Repulsion strength",fontsize=15)
-    plt.xlabel("Adhesion strength",fontsize=15)
+    plt.ylabel("Repulsion strength")
+    plt.xlabel("Adhesion strength")
     
     ### Set title, overlaied plots
     plt.title(r'$\bf{Number\,of\,cells}$'+
