@@ -6,7 +6,6 @@ import seaborn
 from joblib import Parallel, delayed
 import pandas as pd
 from simulation_data import *
-from plots_spheroid_area_over_time import plots_spheroid_area_over_time
 from cluster_function import cluster_function
 from plots_adh_vs_rep import *
 from plots_ecm_remodeling import plots_ecm_remodeling
@@ -16,6 +15,8 @@ from cell_velocities import cell_velocities
 from plots_spheroid_growth_over_time import plots_spheroid_growth_over_time
 from skimage import io
 from PIL import Image
+import os
+from plots_delaunay_mean_distance_over_time import plots_delaunay_mean_distance_over_time 
 
 
 if __name__ == '__main__':
@@ -40,12 +41,12 @@ if __name__ == '__main__':
     table8 = list(range(175,200))
     table9 = list(range(200,225))
 
-    #### ECM degradation 0.005
-    table10 = list(range(225,250))
-
+    #### New tables
+    table11 = list(range(225,235))
+    table12 = list(range(235,245))
 
     #### Choose simulations
-    simulations_multi = [table1,table2,table3,table4,table5,table6,table7,table8,table9]
+    simulations_multi = [[0,1,2,3,4,5,6,7,8,9]]
     
     #### Select project
     proj = 'ecm_density' # 'tests' # 
@@ -111,41 +112,49 @@ if __name__ == '__main__':
         print('Dataframe ready!\n',flush=True)
 
 
-        # ########## SPHEROID GROWTH OVER TIME PLOT ###########
+        ########## SPHEROID GROWTH OVER TIME PLOT ###########
+        for sim in simulations:
+            for rib in riboses:
+                data = df[(df['simulation'] == sim) & (df['ribose'] == rib) & (df['ID'] == 0)]
+                plots_spheroid_growth_over_time(data,save_folder)
+            plt.close('all')
 
-        # for sim in simulations:
-        #     for rib in riboses:
-        #         data = df[(df['simulation'] == sim) & (df['ribose'] == rib) & (df['ID'] == 0)]
-        #         plots_spheroid_growth_over_time(data,save_folder)
 
-        #     plt.close('all')
+        ########## DELAUNAY MEAN DISTANCE OVER TIME PLOT ###########
+        for sim in simulations:
+            for rib in riboses:
+                data = df[(df['simulation'] == sim) & (df['ribose'] == rib) & (df['ID'] == 0)]
+                plots_delaunay_mean_distance_over_time(data,save_folder)
+            plt.close('all')
+
+
+
         data_spheroid_growth = pd.DataFrame()
         data_cluster = pd.DataFrame()
         data_delaunay = pd.DataFrame()
         data_cell_number = pd.DataFrame()
 
-        ######## ADHESION VS REPULSION HEATMAP PLOTS #########
-        timepoints = [0]#[24*60,72*60,96*60]
-        for rib in riboses:
-            for timepoint in timepoints:
-                data_spheroid_growth = df[(df['ribose'] == rib) & (df['ID'] == 0) & ((df['t'] == 0) | (df['t'] == timepoint))]
-                plots_adh_vs_rep_spheroid_growth(data_spheroid_growth, simulation_name, save_folder)
-                print('plots_adh_vs_rep_spheroid_growth done!',flush=True)
+        # ######## ADHESION VS REPULSION HEATMAP PLOTS #########
+        # timepoints = [24*60,72*60,96*60]
+        # for rib in riboses:
+        #     for timepoint in timepoints:
+        #         data_spheroid_growth = df[(df['ribose'] == rib) & (df['ID'] == 0) & ((df['t'] == 0) | (df['t'] == timepoint))]
+        #         plots_adh_vs_rep_spheroid_growth(data_spheroid_growth, simulation_name, save_folder)
+        #         print('plots_adh_vs_rep_spheroid_growth done!',flush=True)
 
-                # data_cluster = df[(df['ribose'] == rib) & (df['t'] == 5760)]
-                # plots_adh_vs_rep_clusters(data_cluster, simulation_name, save_folder)
-                # print('plots_adh_vs_rep_clusters done!',flush=True)
+        #         # data_cluster = df[(df['ribose'] == rib) & (df['t'] == 5760)]
+        #         # plots_adh_vs_rep_clusters(data_cluster, simulation_name, save_folder)
+        #         # print('plots_adh_vs_rep_clusters done!',flush=True)
 
-                data_delaunay = df[(df['ribose'] == rib) & (df['t'] == timepoint)]
-                plots_adh_vs_rep_delaunay(data_delaunay, simulation_name, save_folder)
-                print('plots_adh_vs_rep_delaunay done!',flush=True)
+        #         data_delaunay = df[(df['ribose'] == rib) & (df['t'] == timepoint)]
+        #         plots_adh_vs_rep_delaunay(data_delaunay, simulation_name, save_folder)
+        #         print('plots_adh_vs_rep_delaunay done!',flush=True)
 
-                data_cell_number = df[(df['ribose'] == rib) & (df['t'] == timepoint)]
-                plots_adh_vs_rep_cell_number(data_cell_number, simulation_name, save_folder)
-                print('plots_adh_vs_rep_cell_number done!',flush=True)
+        #         data_cell_number = df[(df['ribose'] == rib) & (df['t'] == timepoint)]
+        #         plots_adh_vs_rep_cell_number(data_cell_number, simulation_name, save_folder)
+        #         print('plots_adh_vs_rep_cell_number done!',flush=True)
 
-
-        plt.close('all')
+        # plt.close('all')
 
         
         # ######## ECM REMODELING HEATMAP PLOT #########
@@ -159,11 +168,10 @@ if __name__ == '__main__':
         
 
         # ######### TIME POINT IMAGE ##############
-        # times = np.unique(df[(df['seed'] == 0) & (df['ID'] == 0)]['t']).astype(int) # [1440,2880,5760]
+        # times = np.unique(df[(df['seed'] == 0) & (df['ID'] == 0)]['t']).astype(int) # [24*60,72*60,92*60] #
         
         # for sim in simulations:
         #     for rib in riboses:
-        #         images = []
         #         for t in times:
         #             seed = 0
         #             data = df[(df['simulation'] == sim) & (df['ribose'] == rib) & (df['seed'] == seed) & (df['t'] == t)]
@@ -176,20 +184,16 @@ if __name__ == '__main__':
         #             time_step = data[data['ID']==0].index.values.astype(int)[0]
         #             snapshot = 'output' + '{:08d}'.format(time_step)
         #             data_folder_sim = data_folder + f'output_rib{rib}_{sim}_{seed}/'
-        #             save_name = save_folder + f'images/full_image_rib{rib}_{sim}_{seed}_t{int(t)}.png'
+        #             save_name = save_folder + f'images/full_image_rib{rib}_{sim}_{seed}_t{int(t):04}.png'
 
         #             print(f'{save_name=}\n', flush=True)
         #             create_plot(data, snapshot, data_folder_sim, save_name, output_plot=True, show_plot=False)
-
-        #             images.append(save_name)
                 
-        #         imgs = []
-        #         for i in images:
-        #             print(i)
-        #             imgs.append(io.imread(i))
-        #         animation = [Image.fromarray(i) for i in imgs]
-        #         animation[0].save(save_folder + f'animations/video_rib{rib}_{sim}_0.gif', save_all=True, append_images=animation[1:], duration=50, loop=0)
-        #         del animation
+        #         video_name = save_folder + f'animations/video_rib{rib}_{sim}_{seed}.mp4'
+        #         images = save_folder + f'images/full_image_rib{rib}_{sim}_{seed}_t*.png'
+
+        #         os.system(f'ffmpeg -y -framerate 10 -pattern_type glob -i \'{images}\' -c:v libx264 -pix_fmt yuv420p -vf pad=\"width=ceil(iw/2)*2:height=ceil(ih/2)*2\" {video_name}')
+
 
 
         # ######### CELL VELOCITIES ##############
@@ -210,36 +214,4 @@ if __name__ == '__main__':
         #                 cluster_function(data,save_folder,figure=False)
         #     # plt.close()
 
-        
-        # ########## SPHEROID AREA GROWTH FOR DIFFERENT PARAMETER SETS ############
-        # mpl.interactive(True)
-        # for sim in simulations:
-        #     for rib in riboses:
-        #         data = df[(df['simulation'] == sim) & (df['ribose'] == rib) & (df['ID'] == 0)]
-
-        #         ##### plot for different adh/rep ratios
-        #         cell_rep = data['cell_rep'].values.tolist()
-        #         cell_adh = data['cell_adh'].values.tolist()
-        #         adh_rep_ratio = float(cell_adh[0])/float(cell_rep[0])
-        #         plots_spheroid_area_growth(data,int(adh_rep_ratio*100),save_folder,simulation_name)
-
-        #         ##### plot for different max motility speeds
-        #         # plots_spheroid_area_growth(data,sum(simulations),save_folder,simulation_name)
-
-        # plt.close('all')
-
-
-        # ########## SPHEROID AREA OVER TIME PLOT ###########
-        # mpl.interactive(True)
-
-        # max_spheroid_area = df[(df['t'] == 5760) & (df['ID'] == 0)]['spheroid_area'].max()
-        # max_spheroid_area = round(max_spheroid_area,-4)+2000
-        # # print(f'max_spheroid_area:{max_spheroid_area}\n',flush=True)
-
-        # for sim in simulations:
-        #     for rib in riboses:
-        #         data = df[(df['simulation'] == sim) & (df['ribose'] == rib) & (df['ID'] == 0)]
-        #         plots_spheroid_area_over_time(data,save_folder,max_spheroid_area)
-
-        #     plt.close('all')
         
