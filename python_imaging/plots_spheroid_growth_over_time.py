@@ -23,8 +23,14 @@ def plots_spheroid_growth_over_time(data,save_folder):
     r_density = data['ecm_density_rate'].iloc[0]
     r_orientation = data['fiber_realignment_rate'].iloc[0]
 
-    spheroid_area = np.reshape(spheroid_area, (-1,len(t))).astype(float)
+    if(ribose == 0):
+        color_rib = seaborn.color_palette('colorblind')[0]
+    elif(ribose == 50):
+        color_rib = seaborn.color_palette('colorblind')[1]
+    else: 
+        color_rib = seaborn.color_palette('colorblind')[2]
 
+    spheroid_area = np.reshape(spheroid_area, (-1,len(t))).astype(float)
 
     spheroid_area_ratio = spheroid_area[:,0]
     spheroid_area_ratio = np.reshape(spheroid_area_ratio,(-1,1))
@@ -34,13 +40,6 @@ def plots_spheroid_growth_over_time(data,save_folder):
     plt.figure(figsize=(6,3))
 
     # print(f'Stage 1: data ready\n',flush=True)
-
-    if(ribose == 0):
-        color_rib = seaborn.color_palette('colorblind')[0]
-    elif(ribose == 50):
-        color_rib = seaborn.color_palette('colorblind')[1]
-    else: 
-        color_rib = seaborn.color_palette('colorblind')[2]
     
     # for i in range(len(spheroid_area)):
     #     # Plot spheroid area over time for all random seeds
@@ -63,7 +62,7 @@ def plots_spheroid_growth_over_time(data,save_folder):
     # print(f'Stage 3: Plots ready\n',flush=True)
 
     ### Set axis labels
-    plt.ylabel(f'Spheroid growth relative to t$_0$',fontsize=15)
+    plt.ylabel(f'Growth relative to t$_0$',fontsize=15)
     plt.xlabel("Time [h]",fontsize=15)
 
     ### Set axis ticks
