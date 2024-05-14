@@ -12,11 +12,10 @@ from plots_ecm_remodeling import plots_ecm_remodeling
 from spheroid_area_function import spheroid_area_function
 from cell_plus_environment_movie_maker import create_plot
 from cell_velocities import cell_velocities
-from plots_spheroid_growth_over_time import plots_spheroid_growth_over_time
+from plots_over_time import *
 from skimage import io
 from PIL import Image
 import os
-from plots_delaunay_mean_distance_over_time import plots_delaunay_mean_distance_over_time 
 
 
 if __name__ == '__main__':
@@ -29,24 +28,17 @@ if __name__ == '__main__':
     plt.style.use('seaborn-v0_8-colorblind')
 
     #### Table for ECM density only model
-    table1 = list(range(0,25))
-    table2 = list(range(25,50))
+    table1 = list(range(0,27))
+    table2 = list(range(27,54))
     table3 = list(range(50,75))
 
     table4 = list(range(75,100))
-    table5 = list(range(100,125))
-    table6 = list(range(125,150))
-
-    table7 = list(range(150,175))
-    table8 = list(range(175,200))
-    table9 = list(range(200,225))
-
-    #### New tables
-    table11 = list(range(225,235))
-    table12 = list(range(235,245))
 
     #### Choose simulations
-    simulations_multi = [[0,1,2,3,4,5,6,7,8,9]]
+    simulations_multi = [[164,167]] # [list(range(153,161))] #[list(range(103,105))]
+        
+    #### Replacing dataframes True or False
+    replacing = True
     
     #### Select project
     proj = 'ecm_density' # 'tests' # 
@@ -59,11 +51,8 @@ if __name__ == '__main__':
     riboses = [0]#,50,200]
 
     #### Random seeds
-    n_seeds = 5
+    n_seeds = 1
     seeds = list(range(0,n_seeds))
-
-    #### Replacing dataframes True or False
-    replacing = False
 
     for simulations in simulations_multi:
         #### Define simulation name for figures
@@ -112,19 +101,14 @@ if __name__ == '__main__':
         print('Dataframe ready!\n',flush=True)
 
 
-        ########## SPHEROID GROWTH OVER TIME PLOT ###########
+        ########## PLOTS OVER TIME ###########
         for sim in simulations:
             for rib in riboses:
-                data = df[(df['simulation'] == sim) & (df['ribose'] == rib) & (df['ID'] == 0)]
+                data = df[(df['simulation'] == sim) & (df['ribose'] == rib)]
                 plots_spheroid_growth_over_time(data,save_folder)
-            plt.close('all')
-
-
-        ########## DELAUNAY MEAN DISTANCE OVER TIME PLOT ###########
-        for sim in simulations:
-            for rib in riboses:
-                data = df[(df['simulation'] == sim) & (df['ribose'] == rib) & (df['ID'] == 0)]
                 plots_delaunay_mean_distance_over_time(data,save_folder)
+                plots_cell_number_over_time(data,save_folder)
+
             plt.close('all')
 
 
@@ -167,36 +151,36 @@ if __name__ == '__main__':
         # plt.close('all')
         
 
-        # ######### TIME POINT IMAGE ##############
-        # times = np.unique(df[(df['seed'] == 0) & (df['ID'] == 0)]['t']).astype(int) # [24*60,72*60,92*60] #
+        ######### TIME POINT IMAGE ##############
+        times = [24*60,72*60,96*60] # np.unique(df[(df['seed'] == 0) & (df['ID'] == 0)]['t']).astype(int) # [24*60,72*60,96*60] #
         
-        # for sim in simulations:
-        #     for rib in riboses:
-        #         for t in times:
-        #             seed = 0
-        #             data = df[(df['simulation'] == sim) & (df['ribose'] == rib) & (df['seed'] == seed) & (df['t'] == t)]
-        #             # spheroid_area_function(data,save_folder=save_folder,figure=True)
-        #             # pd.set_option('display.max_columns', None)
+        for sim in simulations:
+            for rib in riboses:
+                for t in times:
+                    seed = 0
+                    data = df[(df['simulation'] == sim) & (df['ribose'] == rib) & (df['seed'] == seed) & (df['t'] == t)]
+                    # spheroid_area_function(data,save_folder=save_folder,figure=True)
+                    # pd.set_option('display.max_columns', None)
 
-        #             # print('data frame \n', flush=True)
-        #             # print(data, flush = True)
+                    # print('data frame \n', flush=True)
+                    # print(data, flush = True)
 
-        #             time_step = data[data['ID']==0].index.values.astype(int)[0]
-        #             snapshot = 'output' + '{:08d}'.format(time_step)
-        #             data_folder_sim = data_folder + f'output_rib{rib}_{sim}_{seed}/'
-        #             save_name = save_folder + f'images/full_image_rib{rib}_{sim}_{seed}_t{int(t):04}.png'
+                    time_step = data[data['ID']==0].index.values.astype(int)[0]
+                    snapshot = 'output' + '{:08d}'.format(time_step)
+                    data_folder_sim = data_folder + f'output_rib{rib}_{sim}_{seed}/'
+                    save_name = save_folder + f'images/full_image_rib{rib}_{sim}_{seed}_t{int(t):04}.png'
 
-        #             print(f'{save_name=}\n', flush=True)
-        #             create_plot(data, snapshot, data_folder_sim, save_name, output_plot=True, show_plot=False)
+                    print(f'{save_name=}\n', flush=True)
+                    create_plot(data, snapshot, data_folder_sim, save_name, output_plot=True, show_plot=False)
                 
-        #         video_name = save_folder + f'animations/video_rib{rib}_{sim}_{seed}.mp4'
-        #         images = save_folder + f'images/full_image_rib{rib}_{sim}_{seed}_t*.png'
+                # video_name = save_folder + f'animations/video_rib{rib}_{sim}_{seed}.mp4'
+                # images = save_folder + f'images/full_image_rib{rib}_{sim}_{seed}_t*.png'
 
-        #         os.system(f'ffmpeg -y -framerate 10 -pattern_type glob -i \'{images}\' -c:v libx264 -pix_fmt yuv420p -vf pad=\"width=ceil(iw/2)*2:height=ceil(ih/2)*2\" {video_name}')
+                # os.system(f'ffmpeg -y -framerate 10 -pattern_type glob -i \'{images}\' -c:v libx264 -pix_fmt yuv420p -vf pad=\"width=ceil(iw/2)*2:height=ceil(ih/2)*2\" {video_name}')
 
 
 
-        # ######### CELL VELOCITIES ##############
+        # ########### CELL VELOCITIES ##############
         # for sim in simulations:
         #     for rib in riboses:
         #         data = df[(df['simulation'] == sim) & (df['ribose'] == rib)]
