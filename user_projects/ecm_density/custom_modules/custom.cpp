@@ -407,6 +407,8 @@ void setup_tissue( void )
 		// }
 
 		int n = 0; 
+		int voxel_index;
+		std::vector<double> pos;
 		while( y < tumor_radius )
 		{
 			x = 0.0; 
@@ -421,13 +423,19 @@ void setup_tissue( void )
 				pCell = create_cell(cell_defaults);
 					
 				pCell->assign_position( x , y , 0.0 );
-				set_single_behavior(pCell,"cycle entry", 0);
+				set_single_behavior(pCell,"cycle entry", 0);	
+				pos = {(x-cell_radius) , (y-cell_radius), 0.0};
+				voxel_index = microenvironment.nearest_voxel_index( pos);
+				ecm.ecm_voxels[voxel_index].density = 0.5;
 				
 				if( fabs( y ) > 0.01 )
 				{
 					pCell = create_cell(cell_defaults);
 					pCell->assign_position( x , -y , 0.0 );
 					set_single_behavior(pCell,"cycle entry", 0);
+					pos = {(x-cell_radius) , -(y-cell_radius), 0.0};
+					voxel_index = microenvironment.nearest_voxel_index( pos);
+					ecm.ecm_voxels[voxel_index].density = 0.5;
 				}
 				
 				if( fabs( x ) > 0.01 )
@@ -435,12 +443,18 @@ void setup_tissue( void )
 					pCell = create_cell(cell_defaults); 
 					pCell->assign_position( -x , y , 0.0 );
 					set_single_behavior(pCell,"cycle entry", 0);
+					pos = {-(x-cell_radius) , (y-cell_radius), 0.0};
+					voxel_index = microenvironment.nearest_voxel_index( pos);
+					ecm.ecm_voxels[voxel_index].density = 0.5;
 					
 					if( fabs( y ) > 0.01 )
 					{
 						pCell = create_cell(cell_defaults);
 						pCell->assign_position( -x , -y , 0.0 );
 						set_single_behavior(pCell,"cycle entry", 0);
+						pos = {-(x-cell_radius) , -(y-cell_radius), 0.0};
+						voxel_index = microenvironment.nearest_voxel_index( pos);
+						ecm.ecm_voxels[voxel_index].density = 0.5;
 					}
 				}
 				x += cell_spacing; 
@@ -889,8 +903,8 @@ void ecm_update_from_cell_velocity(Cell* pCell , Phenotype& phenotype , double d
 	// 	std::cout<<"r_density = "<<r_density<<std::endl;
 
 	// Set density target to zero
-	double density_target = 0;
-	// double density_target = pCell->custom_data["rho_ideal"];
+	// double density_target = 0;
+	double density_target = pCell->custom_data["rho_ideal"];
 
 	// Get threshold neighbours parameter
 	int overcrowding_threshold = pCell->custom_data["overcrowding_threshold"];
@@ -1017,7 +1031,13 @@ void proliferation_inhibition( Cell* pCell, Phenotype& phenotype, double dt )
 	// Proliferation depends on number of cells in contact
 	double proliferation_rate = get_single_base_behavior(pCell,"cycle entry");
 	// std::cout<<"base proliferation_rate = "<<proliferation_rate<<std::endl;
-	proliferation_rate *= decreasing_linear_response_function(n_attached,0,overcrowding_threshold);
+	if (n_attached >= 6)//overcrowding_threshold)
+	{
+		proliferation_rate = 0;
+	}
+		
+	// proliferation_rate *= decreasing_linear_response_function(n_attached,0,overcrowding_threshold+1);
+	
 	// std::cout<<"proliferation rate: "<<proliferation_rate;
 	// std::cout<<" attached cells: "<<n_attached<<std::endl;
 
@@ -1025,7 +1045,20 @@ void proliferation_inhibition( Cell* pCell, Phenotype& phenotype, double dt )
 	// Computing the index of the voxel at cell position
 	int voxel_index = microenvironment.nearest_voxel_index( pCell->position );
 
-	proliferation_rate *= 1 - ecm.ecm_voxels[voxel_index].density;
+	if (get_single_base_behavior(pCell,"cycle entry") == 0.0007)
+	{
+		proliferation_rate *= ( 1 - ecm.ecm_voxels[voxel_index].density);
+	}
+	else if (get_single_base_behavior(pCell,"cycle entry") == 0.00037)
+	{
+		proliferation_rate *= 2 * ( 1 - ecm.ecm_voxels[voxel_index].density);
+		// if (ecm.ecm_voxels[voxel_index].density == 1)
+		// {
+		// 	proliferation_rate = 0;
+		// }
+	}
+
+
 	// std::cout<<"ECM density: "<<ecm.ecm_voxels[voxel_index].density;
 	// std::cout<<" attached cells: "<<n_attached;
 	// std::cout<<" proliferation rate: "<<proliferation_rate<<std::endl;
