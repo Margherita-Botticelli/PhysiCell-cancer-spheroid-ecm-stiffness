@@ -19,24 +19,25 @@ if repeat_simulations:
 
 
 else:
+    simulation_id = 167
     #### Define parameter values
-    seeds = [0,1,2,3,4]
+    seeds = [0]
     riboses = [0]#, 50, 200]
 
-    proliferations_val = [0.0025]#[0.0007, 0.00105, 0.0014] #np.repeat([0.00035, 0.0007, 0.00105, 0.0014],6) # np.arange(0.02, 1, ).round(3)
-    mot_speeds_val = [0.25,0.5,0.75] #[0.5, 0.75, 1] #[0.75] #[0.3, 0.5, 0.7, 0.9, 1.1] #* 4
+    proliferations_val = [0.00037] # [0.0007] #  
+    mot_speeds_val = [0.5] # [0.5,0.55,0.6] # [0.2,0.25,0.3] # 
 
     # repulsions_val = [4] * 3 + [8] * 4 + [16] * 5 + [32] * 6 + [64] * 7 #+ [128] * 7
-                      
+
     # adhesions_val = [0.5, 1, 2, 
     #                  0.5, 1, 2, 4, 
     #                  0.5, 1, 2, 4, 8, 
     #                  0.5, 1, 2, 4, 8, 16,
     #                  0.5, 1, 2, 4, 8, 16, 32] 
     
-    repulsions_val = [64] * 2
+    repulsions_val = [12] # [24,48,96] # [24] # 
 
-    adhesions_val = [8,16] 
+    adhesions_val = [2] # [4,8,16] # [4] # 
     
     if len(adhesions_val) != len(repulsions_val):
         print(f'Adhesion and repulsion lists have different lengths', flush=True)
@@ -50,11 +51,11 @@ else:
     # r_orientation_val = np.repeat(r_orientation_val_temp * len(r_anisotropy_val_temp), len(r_density_val_temp))
     # r_anisotropy_val = np.repeat(r_anisotropy_val_temp, len(r_density_val_temp) * len(r_orientation_val_temp))
 
-    mot_speeds = np.repeat(mot_speeds_val * len(proliferations_val), len(adhesions_val)) #* len(r_orientation_val) #np.repeat(proliferations_val,len(mot_speeds_val))
-    proliferations = np.repeat(proliferations_val,  len(adhesions_val) * len(mot_speeds_val)) #* len(r_orientation_val))
-    repulsions = repulsions_val * len(proliferations_val) * len(mot_speeds_val) #* len(r_orientation_val)
-    adhesions = adhesions_val * len(proliferations_val) * len(mot_speeds_val) #* len(r_orientation_val)
-    r_densities = r_density_val * len(proliferations_val) * len(mot_speeds_val) * len(adhesions_val) 
+    mot_speeds = np.repeat(mot_speeds_val * len(proliferations_val), len(adhesions_val) * len(r_density_val)) #np.repeat(proliferations_val,len(mot_speeds_val))
+    proliferations = np.repeat(proliferations_val,  len(adhesions_val) * len(mot_speeds_val) * len(r_density_val))
+    repulsions = repulsions_val * len(proliferations_val) * len(mot_speeds_val) * len(r_density_val)
+    adhesions = adhesions_val * len(proliferations_val) * len(mot_speeds_val) * len(r_density_val)
+    r_densities = np.repeat(r_density_val * len(proliferations_val) * len(mot_speeds_val), len(adhesions_val) )
     # r_orientations = r_orientation_val * len(proliferations_val) * len(mot_speeds_val) * len(adhesions_val) 
     # r_anisotropies = r_anisotropy_val * len(proliferations_val) * len(mot_speeds_val) * len(adhesions_val) 
 
@@ -67,6 +68,7 @@ else:
     print(f'Prolif: {proliferations}\n')
     print(f'Rep: {repulsions}\n')
     print(f'Adh: {adhesions}\n')
+    print(f'Degradation: {r_densities}\n')
 
     if len(length_list_parameters)>1:
         print(f'Parameter arrays length no match', flush=True)
@@ -82,18 +84,19 @@ else:
         print(f'Failed with exit code: {return_code}')
         sys.exit()
 
-    directories = []
+    if simulation_id < 0:
+        directories = []
 
-    #### Check what is the last simulation number
-    for p in Path(f'./data/{proj}').iterdir():
-        if p.is_dir():
-            directories.append(p.name)
-    if not directories:
-        simulation_id = 0
-    else:
-        simulation_ids = [int(name.split('_')[2]) for name in directories]
-        simulation_ids.sort()
-        simulation_id = 4#max(simulation_ids) + 1
+        #### Check what is the last simulation number
+        for p in Path(f'./data/{proj}').iterdir():
+            if p.is_dir():
+                directories.append(p.name)
+        if not directories:
+            simulation_id = 0
+        else:
+            simulation_ids = [int(name.split('_')[2]) for name in directories]
+            simulation_ids.sort()
+            simulation_id = max(simulation_ids) + 1
 
     print(f'simulations: {simulation_id} to {simulation_id + num_simulations -1} ')
 
@@ -153,13 +156,16 @@ for sim in simulations:
             ribose_concentration = user_parameters.find('ribose_concentration')
             ecm_orientation_setup = user_parameters.find('ecm_orientation_setup')
             initial_anisotropy = user_parameters.find('initial_anisotropy')
+            tumor_radius = user_parameters.find('tumor_radius')
             folder = save.find('folder')   
             cell_definition = cell_definitions.find('cell_definition')
             phenotype = cell_definition.find('phenotype')
             custom_data = cell_definition.find('custom_data')
             mechanics = phenotype.find('mechanics')
             cycle = phenotype.find('cycle')
+            volume = phenotype.find('volume')
             motility = phenotype.find('motility')
+            total = volume.find('total')
             cell_cell_adhesion_strength = mechanics.find('cell_cell_adhesion_strength')
             cell_cell_repulsion_strength = mechanics.find('cell_cell_repulsion_strength')
             phase_transition_rates = cycle.find('phase_transition_rates')
@@ -191,6 +197,8 @@ for sim in simulations:
                 initial_anisotropy.text = '0'
                 # rate.text = str(r_f0)
                 # rate.text = str(r_density)
+                tumor_radius.text = '100'
+                # total.text = '1900' # '4027' # 
 
                 ecm_orientation_setup.text =  'random' # # 'horizontal' # 'starburst' # 'random' # 'circular' # 
             
