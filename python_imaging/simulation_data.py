@@ -89,6 +89,12 @@ def snapshot_data(ribose, simulation, seed,snapshot,data_folder):
     mechanics = phenotype.find('mechanics')
     phase_transition_rates = cycle.find('phase_transition_rates')
 
+    alpha = float(user_parameters.find('alpha').text) # type: ignore
+    beta = float(user_parameters.find('beta').text) # type: ignore
+    cell_df['alpha'] = alpha
+    cell_df['beta'] = beta
+
+
     cell_cell_adhesion_strength = mechanics.find('cell_cell_adhesion_strength')
     cell_adh = cell_cell_adhesion_strength.text
     cell_adh = float(cell_adh) # type: ignore
