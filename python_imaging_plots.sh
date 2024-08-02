@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --qos bbdefault
-#SBATCH --ntasks 10
+#SBATCH --ntasks 20
 #SBATCH --mem-per-cpu=8G
 #SBATCH --nodes 1
 #SBATCH --time 3000:0
