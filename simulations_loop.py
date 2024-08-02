@@ -5,12 +5,13 @@ import numpy as np
 import subprocess
 
 repeat_simulations = False
-proj = 'ecm_density'
+proj = 'ecm_density' # 'test' # 
 
 if repeat_simulations:
-    seeds = [0]#[6,7,8,9,10,11]
-    riboses = [0]
-    simulations = [758]
+    seeds = [0,1,2,3,4,5,6,7,8,9]
+    riboses = [50,200]
+    simulations = [18]
+
     return_code = os.system(f'make reset; make clean; make load PROJ={proj}')
     if return_code != 0:
         print(f'Failed with exit code: {return_code}')
@@ -19,31 +20,23 @@ if repeat_simulations:
 
 
 else:
-    simulation_id = 167
+    simulation_id = 292
     #### Define parameter values
-    seeds = [0]
-    riboses = [0]#, 50, 200]
+    seeds = [0,1,2,3,4,5,6,7,8,9]
+    riboses = [0,50,200] # [0] # 
 
-    proliferations_val = [0.00037] # [0.0007] #  
-    mot_speeds_val = [0.5] # [0.5,0.55,0.6] # [0.2,0.25,0.3] # 
-
-    # repulsions_val = [4] * 3 + [8] * 4 + [16] * 5 + [32] * 6 + [64] * 7 #+ [128] * 7
-
-    # adhesions_val = [0.5, 1, 2, 
-    #                  0.5, 1, 2, 4, 
-    #                  0.5, 1, 2, 4, 8, 
-    #                  0.5, 1, 2, 4, 8, 16,
-    #                  0.5, 1, 2, 4, 8, 16, 32] 
+    proliferations_val = [0.00037] # [0.00032] # [0.0002,0.0003,0.0004] # 
+    mot_speeds_val = [0.6] # [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1] # [0.6] # [0.1] # [0.5]# 
     
-    repulsions_val = [12] # [24,48,96] # [24] # 
+    repulsions_val = [10]#,20,40,80] #[10] # 
 
-    adhesions_val = [2] # [4,8,16] # [4] # 
+    adhesions_val = [0.4]#,0.8,1.6,3.2] # [0.4] # 
     
     if len(adhesions_val) != len(repulsions_val):
         print(f'Adhesion and repulsion lists have different lengths', flush=True)
         sys.exit() 
 
-    r_density_val_temp = [0.01] 
+    r_density_val_temp = [0.0002] # [0.0001,0.0002,0.0004,0.0008,0.0016,0.0032,0.0064,0.0128] # [0.005] # [0.0004] # [0.0004,0.01] # 
     # r_orientation_val_temp = [0]
     # r_anisotropy_val_temp = [0] 
 
@@ -51,15 +44,28 @@ else:
     # r_orientation_val = np.repeat(r_orientation_val_temp * len(r_anisotropy_val_temp), len(r_density_val_temp))
     # r_anisotropy_val = np.repeat(r_anisotropy_val_temp, len(r_density_val_temp) * len(r_orientation_val_temp))
 
-    mot_speeds = np.repeat(mot_speeds_val * len(proliferations_val), len(adhesions_val) * len(r_density_val)) #np.repeat(proliferations_val,len(mot_speeds_val))
-    proliferations = np.repeat(proliferations_val,  len(adhesions_val) * len(mot_speeds_val) * len(r_density_val))
-    repulsions = repulsions_val * len(proliferations_val) * len(mot_speeds_val) * len(r_density_val)
-    adhesions = adhesions_val * len(proliferations_val) * len(mot_speeds_val) * len(r_density_val)
-    r_densities = np.repeat(r_density_val * len(proliferations_val) * len(mot_speeds_val), len(adhesions_val) )
+    # alpha_val = [1,2,4,8,16,32,64]
+    # beta_val = [1,2,4,8,16,32,64]
+
+    # alphas = np.repeat(alpha_val, len(beta_val))
+    # betas = beta_val * len(alpha_val)
+
+    alphas = [32]
+    betas = [8]
+    
+    proliferations = np.repeat(proliferations_val * len(alphas), len(mot_speeds_val) * len(adhesions_val) * len(r_density_val))
+    mot_speeds = np.repeat(mot_speeds_val * len(proliferations_val)  * len(alphas) ,  len(adhesions_val)  * len(r_density_val)) 
+    repulsions = repulsions_val * len(proliferations_val) * len(mot_speeds_val) * len(r_density_val) * len(alphas)
+    adhesions = adhesions_val * len(proliferations_val) * len(mot_speeds_val) * len(r_density_val)  * len(alphas) 
+    r_densities = np.repeat(r_density_val * len(proliferations_val) * len(mot_speeds_val) * len(alphas), len(adhesions_val) ) 
     # r_orientations = r_orientation_val * len(proliferations_val) * len(mot_speeds_val) * len(adhesions_val) 
     # r_anisotropies = r_anisotropy_val * len(proliferations_val) * len(mot_speeds_val) * len(adhesions_val) 
 
-    length_list_parameters = [len(proliferations),len(repulsions),len(adhesions),len(mot_speeds),len(r_densities)] #,len(r_orientations),len(r_anisotropies)]
+    alphas = np.repeat(alphas,len(proliferations))
+    betas = np.repeat(betas,len(proliferations))
+    
+
+    length_list_parameters = [len(proliferations),len(repulsions),len(adhesions),len(mot_speeds),len(r_densities), len(alphas), len(betas)] #,len(r_orientations),len(r_anisotropies)]
     print(f'Parameter arrays lengths {length_list_parameters}', flush=True)
 
     length_list_parameters = [i for i in length_list_parameters if i != 0]
@@ -69,6 +75,9 @@ else:
     print(f'Rep: {repulsions}\n')
     print(f'Adh: {adhesions}\n')
     print(f'Degradation: {r_densities}\n')
+    print(f'Alpha  : {alphas}\n')
+    print(f'Beta: {betas}\n')
+
 
     if len(length_list_parameters)>1:
         print(f'Parameter arrays length no match', flush=True)
@@ -115,6 +124,8 @@ for sim in simulations:
         # r_orientation = 0
         r_density = r_densities[i]
         # r_anisotropy = 0
+        alpha_text = alphas[i]
+        beta_text = betas[i]
 
     for rib in riboses: 
         for seed in seeds:
@@ -129,7 +140,7 @@ for sim in simulations:
                 ### Start the experiment with the given ribose and seed in the settings file ###
                 
                 #### Copy PhysiCell_settings file from existing simulation with ribose 0 and seed 0 into config folder
-                return_code = os.system(f'cp ./data/{proj}/output_rib{rib}_{sim}_0/PhysiCell_settings.xml ./config/')
+                return_code = os.system(f'cp ./data/{proj}/output_rib0_{sim}_{seed}/PhysiCell_settings.xml ./config/')
                 if return_code != 0:
                     print(f'Failed with exit code: {return_code}')
                     sys.exit()
@@ -175,6 +186,8 @@ for sim in simulations:
             ecm_density_rate = custom_data.find('ecm_density_rate')
             anisotropy_increase_rate = custom_data.find('anisotropy_increase_rate')
             ecm_sensitivity = custom_data.find('ecm_sensitivity')
+            alpha = user_parameters.find('alpha')
+            beta = user_parameters.find('beta')
         
             if(repeat_simulations):
                 virtual_wall_at_domain_edge.text = 'true'
@@ -194,6 +207,8 @@ for sim in simulations:
                 ecm_density_rate.text = str(r_density)
                 anisotropy_increase_rate.text = '0'#str(r_anisotropy)
                 # ecm_sensitivity.text = '0'
+                alpha.text = str(alpha_text)
+                beta.text = str(beta_text)
                 initial_anisotropy.text = '0'
                 # rate.text = str(r_f0)
                 # rate.text = str(r_density)
