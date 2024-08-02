@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn
 
     
-def plots_spheroid_growth_over_time(data,save_folder):
+def plots_spheroid_growth_over_time(data,save_folder,title=True):
     
     #################### PLOT SPHEROID AREA OVER TIME #############################
     # print(f'Stage 0\n',flush=True)
@@ -38,7 +38,7 @@ def plots_spheroid_growth_over_time(data,save_folder):
 
     spheroid_area_ratio = spheroid_area / spheroid_area_ratio
 
-    plt.figure(figsize=(6,3))
+    plt.figure(figsize=(5,4),num=simulation)
 
     # print(f'Stage 1: data ready\n',flush=True)
     
@@ -63,28 +63,29 @@ def plots_spheroid_growth_over_time(data,save_folder):
     # print(f'Stage 3: Plots ready\n',flush=True)
 
     ### Set axis labels
-    plt.ylabel(f'Growth relative to t$_0$',fontsize=15)
-    plt.xlabel("Time [h]",fontsize=15)
+    plt.ylabel(f'Growth relative to t$_0$',fontsize=18)
+    plt.xlabel("Time [h]",fontsize=18)
 
     ### Set axis ticks
-    plt.yticks(np.arange(0,8.1,1),fontsize=13)
-    plt.xticks(np.arange(0, t[-1]+1,t[-1]/4),fontsize=13)
+    plt.yticks(np.arange(0,8.1,1),fontsize=15)
+    plt.xticks(np.arange(0, t[-1]+1,t[-1]/4),fontsize=15)
 
     ### Set title, overlaied plots
-    # plt.suptitle(f'Spheroid area over time',fontsize=13)
-    plt.title(r'$\bf{Spheroid\,growth\,relative\,to\,t_0}$'+f'\n{prolif=}, {max_mot_speed=}\n{cell_adh=}, {cell_rep=}, {r_density=}', fontsize = 12)
+    if title == True:
+        # plt.suptitle(f'Spheroid area over time',fontsize=15)
+        plt.title(r'$\bf{Spheroid\,growth\,relative\,to\,t_0}$'+f'\n{prolif=}, {max_mot_speed=}\n{cell_adh=}, {cell_rep=}, {r_density=}', fontsize = 12)
     
-    plt.legend(title=f'Ribose')
+    plt.legend(title=f'Ribose',fontsize=15,title_fontsize=15)
 
     # print(f'Stage 4: Plots look ready\n',flush=True)
     
-    plt.savefig(save_folder + f'plots/spheroid_growth_over_time_rib{ribose}_{simulation}.png', bbox_inches = "tight")
+    plt.savefig(save_folder + f'plots/spheroid_growth_over_time_{simulation}.png', bbox_inches = "tight")
 
     # print(f'Stage 5: Figure spheroid_area_{simulation} saved\n',flush=True)
     # plt.close()
 
    
-def plots_delaunay_mean_distance_over_time(data,save_folder):
+def plots_delaunay_mean_distance_over_time(data,save_folder, title=True):
     
     #################### PLOT DELAUNAY MEAN DISTANCE OVER TIME #############################
     # print(f'Stage 0\n',flush=True)
@@ -113,7 +114,7 @@ def plots_delaunay_mean_distance_over_time(data,save_folder):
     delaunay_distance = np.reshape(delaunay_distance, (-1,len(t))).astype(float)
 
 
-    plt.figure(figsize=(6,3))
+    plt.figure(figsize=(5,4),num=simulation+1)
 
     # print(f'Stage 1: data ready\n',flush=True)
     
@@ -138,29 +139,31 @@ def plots_delaunay_mean_distance_over_time(data,save_folder):
     # print(f'Stage 3: Plots ready\n',flush=True)
 
     ### Set axis labels
-    plt.ylabel(f'Delaunay mean distance',fontsize=15)
-    plt.xlabel("Time [h]",fontsize=15)
+    plt.ylabel(f'Delaunay mean distance',fontsize=18)
+    plt.xlabel("Time [h]",fontsize=18)
 
     ### Set axis ticks
-    plt.yticks(np.arange(0,25.1,5),fontsize=13)
-    plt.xticks(np.arange(0, t[-1]+1,t[-1]/4),fontsize=13)
+    plt.yticks(np.arange(0,25.1,5),fontsize=15)
+    plt.xticks(np.arange(0, t[-1]+1,t[-1]/4),fontsize=15)
 
     ### Set title, overlaied plots
-    # plt.suptitle(f'Spheroid area over time',fontsize=13)
-    plt.title(r'$\bf{Delaunay\,mean\,distance}$'+f'\n{prolif=}, {max_mot_speed=}\n{cell_adh=}, {cell_rep=}, {r_density=}', fontsize = 12)
+    if title == True:
+        # plt.suptitle(f'Spheroid area over time',fontsize=15)
+        plt.title(r'$\bf{Delaunay\,mean\,distance}$'+f'\n{prolif=}, {max_mot_speed=}\n{cell_adh=}, {cell_rep=}, {r_density=}', fontsize = 12)
+        
+    plt.legend(title=f'Ribose',fontsize=15,title_fontsize=15)
     
-    plt.legend(title=f'Ribose')
 
     # print(f'Stage 4: Plots look ready\n',flush=True)
     
-    plt.savefig(save_folder + f'plots/delaunay_mean_distance_over_time_rib{ribose}_{simulation}.png', bbox_inches = "tight")
+    plt.savefig(save_folder + f'plots/delaunay_mean_distance_over_time_{simulation}.png', bbox_inches = "tight")
 
     # print(f'Stage 5: Figure delaunay_distance_{simulation} saved\n',flush=True)
     # plt.close()
 
 
    
-def plots_cell_number_over_time(data,save_folder):
+def plots_cell_number_over_time(data,save_folder,title=True):
     
     #################### PLOT CELL NUMBER OVER TIME #############################
     # print(f'Stage 0\n',flush=True)
@@ -188,41 +191,47 @@ def plots_cell_number_over_time(data,save_folder):
 
 
     cell_number = []
-    for timepoint in data['t'].unique(): 
+    for seed in seeds:
+        for timepoint in data['t'].unique(): 
         # print(f'{timepoint=}', flush=True)
-        for seed in seeds:
             # print(f'{seed=}', flush=True)
             df_seed = data[(data['t'] == timepoint) & (data['seed'] == seed)]
             cell_number_t = df_seed['ID'].iloc[-1]
             cell_number.append(cell_number_t+1)
 
     cell_number = np.reshape(cell_number, (-1,len(t))).astype(int)
+    # print(f'{cell_number=}', flush=True)
+
+
 
     cell_number_mean = np.mean(cell_number,axis=0)
     cell_number_std = np.std(cell_number,axis=0)
 
-    plt.figure(figsize=(6,3))
+    plt.figure(figsize=(5,4),num=simulation+2)
 
     plt.plot(t,cell_number_mean,label=f'{ribose} mM',color=color_rib)
     plt.fill_between(t, cell_number_mean+cell_number_std, cell_number_mean-cell_number_std, facecolor=color_rib, alpha=0.4)
     
     ### Set axis labels
-    plt.ylabel(f'Cell number',fontsize=15)
-    plt.xlabel("Time [h]",fontsize=15)
+    plt.ylabel(f'Cell number',fontsize=18)
+    plt.xlabel("Time [h]",fontsize=18)
 
     ### Set axis ticks
-    plt.yticks(np.arange(0,1200,200),fontsize=13)
-    plt.xticks(np.arange(0, t[-1]+1,t[-1]/4),fontsize=13)
+    plt.yticks(np.arange(0,1200,200),fontsize=15)
+    plt.xticks(np.arange(0, t[-1]+1,t[-1]/4),fontsize=15)
 
     ### Set title, overlaied plots
-    # plt.suptitle(f'Spheroid area over time',fontsize=13)
-    plt.title(r'$\bf{Cell\,number}$'+f'\n{prolif=}, {max_mot_speed=}\n{cell_adh=}, {cell_rep=}, {r_density=}', fontsize = 12)
+    if title == True:
+        # plt.suptitle(f'Spheroid area over time',fontsize=15)
+        plt.title(r'$\bf{Cell\,number}$'+f'\n{prolif=}, {max_mot_speed=}\n{cell_adh=}, {cell_rep=}, {r_density=}', fontsize = 12)
+        
+    plt.legend(title=f'Ribose',fontsize=15,title_fontsize=15)
     
-    plt.legend(title=f'Ribose')
+
 
     # print(f'Stage 4: Plots look ready\n',flush=True)
     
-    plt.savefig(save_folder + f'plots/cell_number_over_time_rib{ribose}_{simulation}.png', bbox_inches = "tight")
+    plt.savefig(save_folder + f'plots/cell_number_over_time_{simulation}.png', bbox_inches = "tight")
 
     # print(f'Stage 5: Figure delaunay_distance_{simulation} saved\n',flush=True)
     # plt.close()
