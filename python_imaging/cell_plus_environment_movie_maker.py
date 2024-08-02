@@ -14,6 +14,7 @@ from matplotlib.patches import Circle
 import imageio
 import os, sys, re
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
+import seaborn
 
 def print_stats(arr):
     """
@@ -32,7 +33,7 @@ def print_stats(arr):
     print("Max : ", arr.max())
 
 
-def create_plot(data, snapshot, data_folder, save_name, output_plot=True, show_plot=False):
+def create_plot(data, snapshot, data_folder, save_name, output_plot=True, title=True):
     """
     Creates a plot as per instructions inside the function. 
     A base layer of a contour plot of either the anisotropy or the oxygen, the cells in the smulation as a scatter plot,
@@ -89,10 +90,11 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, show_p
 
     #### ECM microenvironment
     xx_ecm, yy_ecm = mcds.get_2D_ECM_mesh()  # Mesh
+    dx = mcds.get_mesh_spacing()
     plane_anisotropy = mcds.get_ECM_field('anisotropy', 0.0)  # Anistropy (used for scaling and contour plot)
     # plane_anisotropy = micro # Used for contour plot
     ecm_density = mcds.get_ECM_field('density',0.0)
-    ecm_density = np.reshape(ecm_density, (50,50))
+    ecm_density = np.reshape(ecm_density, (int(1000/dx),int(1000/dx)))
     ####################################################################################################################
     ####################################            Preprocessing                               ########################
     ####################################################################################################################
@@ -134,18 +136,22 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, show_p
     # start plot and make correct size
     # mpl.rcParams.update({'font.size': 12})
     edge = 500
+    number = int(t)
     fig = plt.figure()
     ax = plt.gca()
+
     
     # fig, ax = plt.subplots(figsize=(12, 12))
 
     # ECM density
-    cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["white","lightsalmon","sienna"])
+    cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["white",seaborn.color_palette('colorblind')[3]])
     # cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["white","#DA70D6"])
 
     plt.pcolormesh(xx_ecm,yy_ecm,ecm_density[:,:],cmap=cmap,vmin=0,vmax=1)
-    plt.colorbar(shrink=0.7,label='ECM density')
-    ax.figure.axes[-1].yaxis.set_label_position('left')
+    
+    #### Colorbar
+    # plt.colorbar(shrink=0.7,label='ECM density')
+    # ax.figure.axes[-1].yaxis.set_label_position('left')
 
 
     # plt.pcolormesh(xx_ecm,yy_ecm,plane_anisotropy[:,:],cmap=cmap,vmin=0,vmax=1)
@@ -162,7 +168,7 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, show_p
     # Add cells layer
     for j in data['ID'].tolist():
         circ = Circle((data[data['ID']==j]['position_x'], data[data['ID']==j]['position_y']),
-                        radius=data[data['ID']==j]['radius'], alpha=0.7, edgecolor='black',facecolor='green')
+                        radius=data[data['ID']==j]['radius'], alpha=0.7, edgecolor='black',facecolor=seaborn.color_palette('colorblind')[2])
         ax.add_artist(circ)
 
     scalebar = AnchoredSizeBar(ax.transData,
@@ -170,19 +176,20 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, show_p
                             pad=0.1,
                             color='white',
                             frameon=False,
-                            size_vertical=1)
+                            size_vertical=1,
+                            fontproperties={'size':15})
     ax.add_artist(scalebar)
 
 
-    text_kwargs = dict(ha='center', va='top', fontsize=12, color='white')
-    plt.text(0, 450, f'Time {int(t/60)}h', **text_kwargs)
+    # text_kwargs = dict(ha='center', va='top', fontsize=18, color='white')
+    # plt.text(0, 350, f'Time {int(t/60)}h', **text_kwargs)
 
     # Labels and title (will need removed for journal - they will be added manually)
     # ax.set_xlabel(r'x [$\mu$m]',fontsize=12)
     # ax.set_ylabel(r'y [$\mu$m]',fontsize=12)
     #fig.colorbar(cs, ax=ax)
-
-    #plt.title('ribose concentration={r}mM\n t={t}min, cell speed={speed}micron/min'.format(r=ribose_concentration,t=t,speed=round(speed,2)))
+    
+    # plt.title('ribose concentration={r}mM\n t={t}min, cell speed={speed}micron/min'.format(r=ribose_concentration,t=t,speed=round(speed,2)))
 
     # Carefully place the command to make the plot square AFTER the color bar has been added.
     ax.axis('scaled')
@@ -194,7 +201,8 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, show_p
     plt.xlim(-edge, edge)
 
     # plt.title(f'{prolif=}, {cell_adh=}, {cell_rep=}, {max_mot_speed=}\n{r_density=}, {r_orientation=}, {r_anisotropy=}\nt={int(t)}',fontsize=12)
-    plt.title(f'{prolif=}, {max_mot_speed=}\n{cell_adh=}, {cell_rep=}, {r_density=}',fontsize=10)
+    if title == True:
+        plt.title(f'{prolif=}, {max_mot_speed=}\n{cell_adh=}, {cell_rep=}, {r_density=}',fontsize=10)
     
     #### Plot style
     plt.style.use('ggplot')
@@ -203,8 +211,6 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, show_p
     # Plot output
     if output_plot is True:
         plt.savefig(save_name,bbox_inches='tight')
-    if show_plot is True:
-        plt.show()
     plt.close()
 
 def create_movie(data_folder: str, save_folder: str, save_name: str):
