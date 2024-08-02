@@ -33,7 +33,7 @@
             <enable>true</enable>
         </full_data>
         <SVG>
-            <interval units="min">720</interval>
+            <interval units="min">60</interval>
             <enable>false</enable>
         </SVG>
         <legacy_data>
@@ -195,6 +195,8 @@
                 <rho_low conserved="false" units="dimensionless" description="Minimum ECM density required for cell motility">0.0</rho_low>
                 <rho_high conserved="false" units="dimensionless" description="Maximum ECM density allowing cell motility">1.0</rho_high>
                 <rho_ideal conserved="false" units="dimensionless" description="Ideal ECM density cell motility">0.5</rho_ideal>
+                <cell_ecm_repulsion_strength description="Cell-ECM repulsion strength">10</cell_ecm_repulsion_strength>
+                <cell_ecm_adhesion_strength description="Cell-ECM adhesion strength">1</cell_ecm_adhesion_strength>
                 <ecm_density_rate conserved="false" units="dimensionless" description="Cell characteristic rate of deposition/degradation of ECM">0.01</ecm_density_rate>
                 <anisotropy_increase_rate conserved="false" units="1/min" description="Anisotropy rate of increase">0.001</anisotropy_increase_rate>
                 <fiber_realignment_rate conserved="false" units="1/min" description="Fiber rate of realignment">0.01</fiber_realignment_rate>
@@ -235,9 +237,11 @@
         <ecm_orientation_setup type="string" units="" description="Specifies the initial ECM orietation: random, horizontal, vertical, circular, starburst, or split">random</ecm_orientation_setup>
         <cell_properties type="double" units="dimensionless" description="Cell properties">0</cell_properties>
         <enable_ecm_outputs type="bool" units="" description="">true</enable_ecm_outputs>
-        <nearest_voxel_remodeling type="string" units="dimensionless" description="nearest voxel for ECM remodelling at cell position (position) or at membrane point (membrane)">position</nearest_voxel_remodeling>
-        <nearest_voxel_direction type="string" units="dimensionless" description="nearest voxel for motility direction at cell position (position) or at membrane point (membrane)">position</nearest_voxel_direction>
-        <nearest_voxel_speed type="string" units="dimensionless" description="nearest voxel for motility speed at cell position (position) or at membrane point (membrane)">position</nearest_voxel_speed>
+        <nearest_voxel_remodeling type="string" units="dimensionless" description="nearest voxel for ECM remodelling at cell position (position) or at membrane point (membrane)">membrane</nearest_voxel_remodeling>
+        <nearest_voxel_direction type="string" units="dimensionless" description="nearest voxel for motility direction at cell position (position) or at membrane point (membrane)">membrane</nearest_voxel_direction>
+        <nearest_voxel_speed type="string" units="dimensionless" description="nearest voxel for motility speed at cell position (position) or at membrane point (membrane)">membrane</nearest_voxel_speed>
         <ecm_definition type="string" units="dimensionless" description="ECM definition: desnity only with no fiber orientation (ecm_density, with fiber orientation and anisotropy (ecm_fibers)">ecm_density</ecm_definition>
+        <alpha type="double" units="" description="">0</alpha>
+        <beta type="double" units="" description="">0</beta>
     </user_parameters>
 </PhysiCell_settings>
