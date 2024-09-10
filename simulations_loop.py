@@ -4,13 +4,18 @@ from pathlib import Path
 import numpy as np
 import subprocess
 
+#### Script to run multiple simulations automatically by giving the parameter values
+
+#### Project name corresponding to folder in user_projects
+proj = 'ecm_density' # 'test' # 'ecm_fibres'
+
+#### True if we want to repeat an existing simulation with different random seeds or ribose concentrations 
 repeat_simulations = False
-proj = 'ecm_density' # 'test' # 
 
 if repeat_simulations:
     seeds = [0,1,2,3,4,5,6,7,8,9]
     riboses = [50,200]
-    simulations = [18]
+    simulations = [0]
 
     return_code = os.system(f'make reset; make clean; make load PROJ={proj}')
     if return_code != 0:
@@ -18,58 +23,36 @@ if repeat_simulations:
         sys.exit()
     # sys.exit()
 
-
 else:
-    simulation_id = 292
-    #### Define parameter values
-    seeds = [0,1,2,3,4,5,6,7,8,9]
-    riboses = [0,50,200] # [0] # 
+    #### Define parameter values for the simulations
+    seeds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] # [0] # 
+    riboses = [0, 50, 200] # [0] # 
+    proliferation_vals = [0.0002, 0.0003, 0.0004] # [0.00037] # [0.00032] # 
+    mot_speed_vals = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1] # [0.6] # [0.1] # 
+    repulsion_vals = [10]
+    adhesion_vals = [0.4]
+    r_density_vals = [0.0001, 0.0002, 0.0004, 0.0008, 0.0016, 0.0032, 0.0064, 0.0128] # [0.0002] 
+    alpha_vals = [1, 2, 4, 8, 16, 32, 64]
+    beta_vals = [1, 2, 4, 8, 16, 32, 64]
 
-    proliferations_val = [0.00037] # [0.00032] # [0.0002,0.0003,0.0004] # 
-    mot_speeds_val = [0.6] # [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1] # [0.6] # [0.1] # [0.5]# 
+    #### Combine parameters
+    alphas = np.repeat(alpha_vals, len(beta_vals))
+    betas = beta_vals * len(alpha_vals)
+    proliferations = np.repeat(proliferation_vals * len(alphas), len(mot_speed_vals) * len(adhesion_vals) * len(r_density_vals))
+    mot_speeds = np.repeat(mot_speed_vals * len(proliferation_vals)  * len(alphas) ,  len(adhesion_vals)  * len(r_density_vals)) 
+    repulsions = repulsion_vals * len(proliferation_vals) * len(mot_speed_vals) * len(r_density_vals) * len(alphas)
+    adhesions = adhesion_vals * len(proliferation_vals) * len(mot_speed_vals) * len(r_density_vals)  * len(alphas) 
+    r_densities = np.repeat(r_density_vals * len(proliferation_vals) * len(mot_speed_vals) * len(alphas), len(adhesion_vals) ) 
+    alphas = np.repeat(alphas,len(proliferations)* len(beta_vals))
+    betas = np.repeat(betas * len(alpha_vals),len(proliferations))
     
-    repulsions_val = [10]#,20,40,80] #[10] # 
-
-    adhesions_val = [0.4]#,0.8,1.6,3.2] # [0.4] # 
-    
-    if len(adhesions_val) != len(repulsions_val):
-        print(f'Adhesion and repulsion lists have different lengths', flush=True)
-        sys.exit() 
-
-    r_density_val_temp = [0.0002] # [0.0001,0.0002,0.0004,0.0008,0.0016,0.0032,0.0064,0.0128] # [0.005] # [0.0004] # [0.0004,0.01] # 
-    # r_orientation_val_temp = [0]
-    # r_anisotropy_val_temp = [0] 
-
-    r_density_val = r_density_val_temp #* len(r_orientation_val_temp) * len(r_anisotropy_val_temp)
-    # r_orientation_val = np.repeat(r_orientation_val_temp * len(r_anisotropy_val_temp), len(r_density_val_temp))
-    # r_anisotropy_val = np.repeat(r_anisotropy_val_temp, len(r_density_val_temp) * len(r_orientation_val_temp))
-
-    # alpha_val = [1,2,4,8,16,32,64]
-    # beta_val = [1,2,4,8,16,32,64]
-
-    # alphas = np.repeat(alpha_val, len(beta_val))
-    # betas = beta_val * len(alpha_val)
-
-    alphas = [32]
-    betas = [8]
-    
-    proliferations = np.repeat(proliferations_val * len(alphas), len(mot_speeds_val) * len(adhesions_val) * len(r_density_val))
-    mot_speeds = np.repeat(mot_speeds_val * len(proliferations_val)  * len(alphas) ,  len(adhesions_val)  * len(r_density_val)) 
-    repulsions = repulsions_val * len(proliferations_val) * len(mot_speeds_val) * len(r_density_val) * len(alphas)
-    adhesions = adhesions_val * len(proliferations_val) * len(mot_speeds_val) * len(r_density_val)  * len(alphas) 
-    r_densities = np.repeat(r_density_val * len(proliferations_val) * len(mot_speeds_val) * len(alphas), len(adhesions_val) ) 
-    # r_orientations = r_orientation_val * len(proliferations_val) * len(mot_speeds_val) * len(adhesions_val) 
-    # r_anisotropies = r_anisotropy_val * len(proliferations_val) * len(mot_speeds_val) * len(adhesions_val) 
-
-    alphas = np.repeat(alphas,len(proliferations))
-    betas = np.repeat(betas,len(proliferations))
-    
-
+    #### Check if the parameters all have same length
     length_list_parameters = [len(proliferations),len(repulsions),len(adhesions),len(mot_speeds),len(r_densities), len(alphas), len(betas)] #,len(r_orientations),len(r_anisotropies)]
     print(f'Parameter arrays lengths {length_list_parameters}', flush=True)
 
     length_list_parameters = [i for i in length_list_parameters if i != 0]
     length_list_parameters = list(np.unique(length_list_parameters))
+    
     print(f'Mot speeds: {mot_speeds}\n')
     print(f'Prolif: {proliferations}\n')
     print(f'Rep: {repulsions}\n')
@@ -78,25 +61,28 @@ else:
     print(f'Alpha  : {alphas}\n')
     print(f'Beta: {betas}\n')
 
-
+    #### If not exit
     if len(length_list_parameters)>1:
         print(f'Parameter arrays length no match', flush=True)
         sys.exit() 
 
+    #### Get total number of simulations
     num_simulations = len(mot_speeds)
-    # sys.exit() 
 
-    ### Start the experiment with the given ribose and seed in the settings file ###
+    #### Reset, clean and initiate the project (make sure the project folder exists in data folder too)
     return_code = os.system(f'make reset; make clean; make load PROJ={proj}')
-
     if return_code != 0:
         print(f'Failed with exit code: {return_code}')
         sys.exit()
 
+    #### Simulations ID number: write number manually or write negative number to find last simulation number in the data folder 
+    simulation_id = 292
+
+    #### If the simulation_id number is negative find the last simulation number in the data folder
     if simulation_id < 0:
         directories = []
 
-        #### Check what is the last simulation number
+        #### Check what is the last simulation number in the data folder
         for p in Path(f'./data/{proj}').iterdir():
             if p.is_dir():
                 directories.append(p.name)
@@ -107,23 +93,24 @@ else:
             simulation_ids.sort()
             simulation_id = max(simulation_ids) + 1
 
+    #### List of all simulations
+    simulations = range(simulation_id, simulation_id + num_simulations)
     print(f'simulations: {simulation_id} to {simulation_id + num_simulations -1} ')
 
-    simulations = range(simulation_id, simulation_id + num_simulations)
-
+#### List to check when all of the simulations are finished
 results = []
+
+#### Initiate parameter to go through parameter lists every new simulation loop
 i = 0
 
 for sim in simulations:
-    
     if repeat_simulations == False:
+        #### Select parameter values
         proliferation = proliferations[i]
         motility_speed = mot_speeds[i] 
         adhesion = adhesions[i]
         repulsion = repulsions[i]
-        # r_orientation = 0
         r_density = r_densities[i]
-        # r_anisotropy = 0
         alpha_text = alphas[i]
         beta_text = betas[i]
 
@@ -131,6 +118,7 @@ for sim in simulations:
         for seed in seeds:
             print(f'\n####Simulation {sim}, ribose {rib}, random seed {seed}', flush=True)
             
+            #### Create the output folder for the current simulation
             return_code = os.system(f'mkdir -p ./data/{proj}/output_rib{rib}_{sim}_{seed}')
             if return_code != 0:
                 print(f'Failed with exit code: {return_code}')
@@ -139,13 +127,13 @@ for sim in simulations:
             if repeat_simulations:
                 ### Start the experiment with the given ribose and seed in the settings file ###
                 
-                #### Copy PhysiCell_settings file from existing simulation with ribose 0 and seed 0 into config folder
+                #### Copy PhysiCell_settings file from existing simulation with ribose 0 into config folder
                 return_code = os.system(f'cp ./data/{proj}/output_rib0_{sim}_{seed}/PhysiCell_settings.xml ./config/')
                 if return_code != 0:
                     print(f'Failed with exit code: {return_code}')
                     sys.exit()
                 
-                #### Copy custom.cpp file from existing simulation with ribose 0 and seed 0 into custom_modules folder
+                #### Copy custom.cpp file from existing simulation with ribose 0 into custom_modules folder
                 return_code = os.system(f'cp ./user_projects/{proj}/custom_modules/* ./custom_modules/ ')
                 if return_code != 0:
                     print(f'Failed with exit code: {return_code}')
@@ -157,7 +145,7 @@ for sim in simulations:
             tree = ET.parse('./config/PhysiCell_settings.xml')  
             root = tree.getroot()
 
-            #### BUILD THE SETTINGS FILE ####
+            #### Build the PhysiCell_settings file with the given parameter values
             options = root.find('options')
             user_parameters = root.find('user_parameters')
             save = root.find('save')
@@ -203,23 +191,18 @@ for sim in simulations:
                 cell_cell_repulsion_strength.text = str(repulsion)
                 prolif_rate.text = str(proliferation)
                 mot_speed.text = str(motility_speed)
-                fiber_realignment_rate.text = '0'#str(r_orientation)
+                fiber_realignment_rate.text = '0'
                 ecm_density_rate.text = str(r_density)
-                anisotropy_increase_rate.text = '0'#str(r_anisotropy)
+                anisotropy_increase_rate.text = '0'
                 # ecm_sensitivity.text = '0'
                 alpha.text = str(alpha_text)
                 beta.text = str(beta_text)
                 initial_anisotropy.text = '0'
-                # rate.text = str(r_f0)
-                # rate.text = str(r_density)
                 tumor_radius.text = '100'
-                # total.text = '1900' # '4027' # 
-
-                ecm_orientation_setup.text =  'random' # # 'horizontal' # 'starburst' # 'random' # 'circular' # 
+                ecm_orientation_setup.text =  'random' # 'horizontal' # 'starburst' # 'random' # 'circular' # 
             
-            #### WRITE THE XML FILE FOR THE CURRENT SIMULATIONS ####
-            tree.write('./config/PhysiCell_settings.xml')    # this should be the path too where pyhsicell wants it's settings
-            
+            #### Write the xml file for the current simulation
+            tree.write('./config/PhysiCell_settings.xml')    
             print(f'#### Xml settings file has been written\n',flush=True)
 
             #### Copy custom.cpp file from custom_modules folder into new simulation folder
@@ -228,7 +211,7 @@ for sim in simulations:
             #### Copy PhysiCell_settings file from config folder into new simulation folder
             os.system(f'cp ./config/PhysiCell_settings.xml ./data/{proj}/output_rib{rib}_{sim}_{seed}/')
 
-            #### START SIMULATION ####
+            #### Start simulation (simulations run in parallel)
             os.system('make') 
             if len(results)==0:
                 return_code = subprocess.Popen(f'./project')
@@ -244,7 +227,7 @@ for sim in simulations:
 
     i += 1
 
-# Iterate through all return codes, only exit when all are done. sp.run always
+# Iterate through all return codes, only exit when all are done (subprocess.run)
 # returns True because we know it waits until finishing
 while True:
     temp_results = []
