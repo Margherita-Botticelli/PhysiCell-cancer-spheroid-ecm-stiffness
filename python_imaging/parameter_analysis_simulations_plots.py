@@ -10,6 +10,7 @@ from cluster_function import cluster_function
 from heatmaps import *
 from plots_ecm_remodeling import plots_ecm_remodeling
 from spheroid_area_function import spheroid_area_function
+from delaunay_function import *
 from cell_plus_environment_movie_maker import create_plot
 from cell_velocities import cell_velocities
 from plots_over_time import *
@@ -39,7 +40,8 @@ if __name__ == '__main__':
 
     #### Choose simulations
     # simulations_multi = table2
-    simulations_multi = [[292]]
+    simulations_multi = [[240]] # invasive
+    # simulations_multi = [[291]] # non-invasive
     # simulations_multi = [list(range(0,240))]
     # simulations_multi = [list(range(242,245))]
     # simulations_multi = [list(range(241,290))]
@@ -49,18 +51,18 @@ if __name__ == '__main__':
     replacing = False
     
     #### Ribose concentrations
-    riboses = [0,50,200] #[0]#,50,200]
+    riboses = [0]#,50,200] #[0]#,50,200]
 
     #### Random seeds
-    n_seeds = 10
+    n_seeds = 1
     seeds = list(range(0,n_seeds))
 
     #### Plots
-    plots_over_time = True
+    plots_over_time = False
     title = False
     heatmaps = False
-    time_point_images = True
-    times = [96*60] # [24*60,96*60] # [24*60] # [24*60,48*60,72*60,96*60] # [24*60,96*60] # 'all' # 
+    time_point_images = False
+    times = 'all' # [96*60] # [24*60,96*60] # [24*60] # [24*60,48*60,72*60,96*60] # [24*60,96*60] # 
     video = False
 
 
@@ -139,32 +141,32 @@ if __name__ == '__main__':
             timepoints = [96*60]
             for rib in riboses:
                 for timepoint in timepoints:
-                        data = df[(df['ribose'] == rib) & (df['ID'] == 0) & ((df['t'] == 0) | (df['t'] == timepoint))]
-                        for prolif in np.unique(data['prolif']).astype(float):
-                            data_spheroid_growth =df[(df['ribose'] == rib) & (df['ID'] == 0) & ((df['t'] == 0) | (df['t'] == timepoint)) & (df['prolif'] == prolif)]
-                            simulations_heatmap = np.unique(data_spheroid_growth['simulation']).astype(int)
-                            simulation_name_plot = simulations_heatmap[0]
-                            plots_mot_vs_degr_spheroid_growth(data_spheroid_growth, simulation_name_plot, save_folder, title)
-                            print('plots_mot_vs_degr_spheroid_growth done!',flush=True)
+                        # data = df[(df['ribose'] == rib) & (df['ID'] == 0) & ((df['t'] == 0) | (df['t'] == timepoint))]
+                        # for prolif in np.unique(data['prolif']).astype(float):
+                        #     data_spheroid_growth =df[(df['ribose'] == rib) & (df['ID'] == 0) & ((df['t'] == 0) | (df['t'] == timepoint)) & (df['prolif'] == prolif)]
+                        #     simulations_heatmap = np.unique(data_spheroid_growth['simulation']).astype(int)
+                        #     simulation_name_plot = simulations_heatmap[0]
+                        #     plots_mot_vs_degr_spheroid_growth(data_spheroid_growth, simulation_name_plot, save_folder, title)
+                        #     print('plots_mot_vs_degr_spheroid_growth done!',flush=True)
                             
 
-                        data = df[(df['ribose'] == rib) & (df['ID'] == 0) & (df['t'] == timepoint)]
-                        for prolif in np.unique(data['prolif']).astype(float):
-                            data_delaunay = data[(data['prolif'] == prolif)]
-                            simulations_heatmap = np.unique(data_delaunay['simulation']).astype(int)
-                            # simulation_name_plot = '_'.join(str(s) for s in simulations)
-                            simulation_name_plot = simulations_heatmap[0]
+                        # data = df[(df['ribose'] == rib) & (df['ID'] == 0) & (df['t'] == timepoint)]
+                        # for prolif in np.unique(data['prolif']).astype(float):
+                        #     data_delaunay = data[(data['prolif'] == prolif)]
+                        #     simulations_heatmap = np.unique(data_delaunay['simulation']).astype(int)
+                        #     # simulation_name_plot = '_'.join(str(s) for s in simulations)
+                        #     simulation_name_plot = simulations_heatmap[0]
                             
-                            plots_mot_vs_degr_delaunay(data_delaunay, simulation_name_plot, save_folder, title)
-                            print('plots_mot_vs_degr_delaunay done!',flush=True)                   
+                        #     plots_mot_vs_degr_delaunay(data_delaunay, simulation_name_plot, save_folder, title)
+                        #     print('plots_mot_vs_degr_delaunay done!',flush=True)                   
 
                         
-                        # data_spheroid_growth = df[(df['ribose'] == rib) & (df['ID'] == 0) & ((df['t'] == 0) | (df['t'] == timepoint))]
-                        # simulations_heatmap = np.unique(data_spheroid_growth['simulation']).astype(int)
-                        # # simulation_name_plot = '_'.join(str(s) for s in simulations)
-                        # simulation_name_plot = simulations_heatmap[0]
-                        # plots_alpha_vs_beta_spheroid_growth(data_spheroid_growth, simulation_name_plot, save_folder, title)
-                        # print('plots_alpha_vs_beta_spheroid_growth done!',flush=True)
+                        data_spheroid_growth = df[(df['ribose'] == rib) & (df['ID'] == 0) & ((df['t'] == 0) | (df['t'] == timepoint))]
+                        simulations_heatmap = np.unique(data_spheroid_growth['simulation']).astype(int)
+                        # simulation_name_plot = '_'.join(str(s) for s in simulations)
+                        simulation_name_plot = simulations_heatmap[0]
+                        plots_alpha_vs_beta_spheroid_growth(data_spheroid_growth, simulation_name_plot, save_folder, title)
+                        print('plots_alpha_vs_beta_spheroid_growth done!',flush=True)
                             
                         
 
@@ -210,7 +212,7 @@ if __name__ == '__main__':
                         seed = 0
                         data = (df[(df['simulation'] == sim) & (df['ribose'] == rib) & (df['seed'] == seed) & (df['t'] == t)])
 
-                        # # spheroid_area_function(data,save_folder=save_folder,figure=True)
+                        # spheroid_area_function(data,save_folder=save_folder,figure=True)
                         # pd.set_option('display.max_columns', None)
 
                         # print('data frame \n', flush=True)
@@ -250,4 +252,8 @@ if __name__ == '__main__':
         #                 cluster_function(data,save_folder,figure=False)
         #     # plt.close()
 
-        
+
+        data = df[df['t'] == 96*60]
+        print(data,flush=True)
+        delaunay_distance_function(data,save_folder=save_folder,figure=True)
+        spheroid_area_function(data,save_folder=save_folder,figure=True)

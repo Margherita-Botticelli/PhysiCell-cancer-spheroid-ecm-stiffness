@@ -1,18 +1,22 @@
+from turtle import color
 from pyMCDS_ECM import *
 import numpy as np
 import os
 from skimage import io, draw, util
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import seaborn
+from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
+
 
 
 
 def spheroid_area_function(data,save_folder='../results/',figure=False):
     
-    ribose = data['ribose'].loc[0]
-    simulation = data['simulation'].loc[0]
-    seed = data['seed'].loc[0]
-    t = data['t'].loc[0]
+    ribose = data['ribose'].iloc[0]
+    simulation = data['simulation'].iloc[0]
+    seed = data['seed'].iloc[0]
+    t = data['t'].iloc[0]
     radius = data['radius'].to_numpy()
     position_x = data['position_x'].to_numpy()
     position_y = data['position_y'].to_numpy()
@@ -52,28 +56,46 @@ def spheroid_area_function(data,save_folder='../results/',figure=False):
         # io.imsave(save_folder + f'mask_{int(t)}.png', util.img_as_ubyte(spheroid_area_mask))
 
 
-        plt.figure()
+        fig = plt.figure()
         ax = plt.gca()
 
-        plt.imshow(spheroid_area_mask,extent=(-500, 500, -500, 500))
+        cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["black",'white'])
+        plt.imshow(spheroid_area_mask,extent=(-500, 500, -500, 500),cmap=cmap)
+        
+
+        ax.set_facecolor("black")
 
         plt.grid(False)
 
         edge = 500
-        plt.xticks(np.arange(-edge,edge+1, step=40),fontsize=12,rotation=45)
-        plt.yticks(np.arange(-edge,edge+1, step=40),fontsize=12)
+        plt.xticks([])#(np.arange(-edge,edge+1, step=100),fontsize=12,rotation=45)
+        plt.yticks([])#(np.arange(-edge,edge+1, step=100),fontsize=12)
+        
         plt.ylim(-edge, edge)
         plt.xlim(-edge, edge)
 
-        #### Set title, overlaied plots
-        # plt.suptitle('Clusters and outliers', fontsize = 12)
-        plt.title(f'{prolif=}, {cell_adh=}, {cell_rep=}, {max_mot_speed=}\n{r_density=}, {r_orientation=}, {r_anisotropy=}\nt={int(t)}',fontsize=10)
+        scalebar = AnchoredSizeBar(ax.transData,
+            100, r'100 [$\mu$m]', 'lower right', 
+            pad=0.1,
+            color='white',
+            frameon=False,
+            size_vertical=1,
+            fontproperties={'size':15})
+        ax.add_artist(scalebar)
+
+        ax.axis('scaled')
+
+
+
+        # #### Set title, overlaied plots
+        # # plt.suptitle('Clusters and outliers', fontsize = 12)
+        # plt.title(f'{prolif=}, {cell_adh=}, {cell_rep=}, {max_mot_speed=}\n{r_density=}, {r_orientation=}, {r_anisotropy=}\nt={int(t)}',fontsize=10)
 
         #### Plot style
         plt.style.use('ggplot')
         plt.style.use('seaborn-v0_8-colorblind')
 
-        plt.savefig(save_folder + f'/images/cell_image_rib{ribose}_{simulation}_{seed}_t{int(t)}.png', dpi=600)
+        plt.savefig(save_folder + f'/statistics/cell_image_rib{ribose}_{simulation}_{seed}_t{int(t)}.png',bbox_inches='tight')
         
         plt.close()
 

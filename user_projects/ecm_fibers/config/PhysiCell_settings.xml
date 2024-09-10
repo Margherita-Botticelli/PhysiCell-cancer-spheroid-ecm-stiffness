@@ -33,7 +33,7 @@
             <enable>true</enable>
         </full_data>
         <SVG>
-            <interval units="min">10</interval>
+            <interval units="min">60</interval>
             <enable>false</enable>
         </SVG>
         <legacy_data>
@@ -127,8 +127,8 @@
                     <relative_rupture_volume units="dimensionless">2.0</relative_rupture_volume>
                 </volume>
                 <mechanics>
-                    <cell_cell_adhesion_strength units="micron/min">5.0</cell_cell_adhesion_strength>
-                    <cell_cell_repulsion_strength units="micron/min">50.0</cell_cell_repulsion_strength>
+                    <cell_cell_adhesion_strength units="micron/min">4.0</cell_cell_adhesion_strength>
+                    <cell_cell_repulsion_strength units="micron/min">10.0</cell_cell_repulsion_strength>
                     <relative_maximum_adhesion_distance units="dimensionless">1.25</relative_maximum_adhesion_distance>
                     <cell_adhesion_affinities>
                         <cell_adhesion_affinity name="default">1.0</cell_adhesion_affinity>
@@ -144,7 +144,7 @@
                     <detachment_rate units="1/min">0.0</detachment_rate>
                 </mechanics>
                 <motility>
-                    <speed units="micron/min">0.75</speed>
+                    <speed units="micron/min">0.5</speed>
                     <persistence_time units="min">10</persistence_time>
                     <migration_bias units="dimensionless">1.0</migration_bias>
                     <options>
@@ -195,7 +195,9 @@
                 <rho_low conserved="false" units="dimensionless" description="Minimum ECM density required for cell motility">0.0</rho_low>
                 <rho_high conserved="false" units="dimensionless" description="Maximum ECM density allowing cell motility">1.0</rho_high>
                 <rho_ideal conserved="false" units="dimensionless" description="Ideal ECM density cell motility">0.5</rho_ideal>
-                <ecm_density_rate conserved="false" units="dimensionless" description="Cell characteristic rate of deposition/degradation of ECM">0.001</ecm_density_rate>
+                <cell_ecm_repulsion_strength description="Cell-ECM repulsion strength">10</cell_ecm_repulsion_strength>
+                <cell_ecm_adhesion_strength description="Cell-ECM adhesion strength">1</cell_ecm_adhesion_strength>
+                <ecm_density_rate conserved="false" units="dimensionless" description="Cell characteristic rate of deposition/degradation of ECM">0.01</ecm_density_rate>
                 <anisotropy_increase_rate conserved="false" units="1/min" description="Anisotropy rate of increase">0.001</anisotropy_increase_rate>
                 <fiber_realignment_rate conserved="false" units="1/min" description="Fiber rate of realignment">0.01</fiber_realignment_rate>
                 <ecm_sensitivity description="Cell sensitivity to ECM orientation for ECM following type cells" type="double" units="dimensionless">1.0</ecm_sensitivity>
@@ -232,12 +234,14 @@
         <ecm_dz type="double" units="micron" description="Length of ECM unit in z-direction">20</ecm_dz>
         <normalize_ecm_influenced_motility_vector type="bool" units="" description="">true</normalize_ecm_influenced_motility_vector>
         <cell_setup type="string" units="" description="Specifies the initial cell setup: single, random, lesion, cells at y = 0, circle of cells, or cells at left boundary/march">lesion</cell_setup>
-        <ecm_orientation_setup type="string" units="" description="Specifies the initial ECM orietation: random, horizontal, vertical, circular, starburst, or split">starburst</ecm_orientation_setup>
+        <ecm_orientation_setup type="string" units="" description="Specifies the initial ECM orietation: random, horizontal, vertical, circular, starburst, or split">random</ecm_orientation_setup>
         <cell_properties type="double" units="dimensionless" description="Cell properties">0</cell_properties>
         <enable_ecm_outputs type="bool" units="" description="">true</enable_ecm_outputs>
         <nearest_voxel_remodeling type="string" units="dimensionless" description="nearest voxel for ECM remodelling at cell position (position) or at membrane point (membrane)">membrane</nearest_voxel_remodeling>
         <nearest_voxel_direction type="string" units="dimensionless" description="nearest voxel for motility direction at cell position (position) or at membrane point (membrane)">membrane</nearest_voxel_direction>
         <nearest_voxel_speed type="string" units="dimensionless" description="nearest voxel for motility speed at cell position (position) or at membrane point (membrane)">membrane</nearest_voxel_speed>
-        <ecm_definition type="string" units="dimensionless" description="ECM definition: desnity only with no fiber orientation (ecm_density, with fiber orientation and anisotropy (ecm_fibers)">ecm_fibers</ecm_definition>
+        <ecm_definition type="string" units="dimensionless" description="ECM definition: desnity only with no fiber orientation (ecm_density, with fiber orientation and anisotropy (ecm_fibers)">ecm_density</ecm_definition>
+        <alpha type="double" units="" description="">0</alpha>
+        <beta type="double" units="" description="">0</beta>
     </user_parameters>
 </PhysiCell_settings>

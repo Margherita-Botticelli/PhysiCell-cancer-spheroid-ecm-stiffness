@@ -6,6 +6,8 @@ from scipy.spatial import distance_matrix
 from sklearn.cluster import AgglomerativeClustering as AC
 from skimage import io, draw, util, color
 import seaborn
+from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
+from matplotlib.patches import Rectangle
 
 def delaunay_distance_function(data,save_folder='../results/',figure=False):
 
@@ -73,26 +75,43 @@ def delaunay_distance_function(data,save_folder='../results/',figure=False):
     if figure == True:
         #### Plot network
         #### Initialise figure
-        plt.figure()
+        plt.figure(figsize=(5,5))
         ax = plt.gca()
 
         plt.grid(False)
 
         #### Set axes
-        ax.set_xlim(-510, 510)
-        ax.set_ylim(-510, 510)
-        ax.set_xticks(np.arange(-500,501,100))
-        ax.set_yticks(np.arange(-500,501,100))
 
+        edge = 500
+        plt.xticks([])#(np.arange(-edge,edge+1, step=100),fontsize=12,rotation=45)
+        plt.yticks([])#(np.arange(-edge,edge+1, step=100),fontsize=12)
+
+        plt.ylim(-edge, edge)
+        plt.xlim(-edge, edge)
+    
         #### Plot network
-        plt.triplot(coordinates[:,0], coordinates[:,1], delaunay_network.simplices)
-        plt.plot(coordinates[:,0], coordinates[:,1], 'o')
+        plt.plot(coordinates[:,0], coordinates[:,1], 'o',color=seaborn.color_palette('colorblind')[2],zorder=0)
+        plt.triplot(coordinates[:,0], coordinates[:,1], delaunay_network.simplices, color='black',zorder=1,lw=0.5)
 
-        #### Plot style
-        plt.style.use('ggplot')
-        plt.style.use('seaborn-v0_8-colorblind')
+        # ax.add_patch( Rectangle((-500, -500), 1000, 1000, fc='none', ec='black') )
 
-        plt.savefig(save_folder + f'clusters/delaunay_rib{ribose}_{simulation}_{seed}_t{int(t)}.png', dpi=600)
+        scalebar = AnchoredSizeBar(ax.transData,
+                    100, r'100 [$\mu$m]', 'lower right', 
+                    pad=0.1,
+                    color='black',
+                    frameon=False,
+                    size_vertical=1,
+                    fontproperties={'size':15})
+        ax.add_artist(scalebar)
+
+
+
+
+        # #### Plot style
+        # plt.style.use('ggplot')
+        # plt.style.use('seaborn-v0_8-colorblind')
+
+        plt.savefig(save_folder + f'/statistics/delaunay_rib{ribose}_{simulation}_{seed}_t{int(t)}.png',bbox_inches='tight')
         
         plt.close()
 

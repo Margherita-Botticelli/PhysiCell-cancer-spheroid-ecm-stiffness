@@ -6,6 +6,7 @@ import seaborn
 import pandas as pd
 from cluster_function import cluster_function
 from delaunay_function import delaunay_distance_function
+import math
 
 
 
@@ -233,8 +234,8 @@ def plots_alpha_vs_beta_spheroid_growth(data, simulation_name, save_folder, titl
         # print(f'{spheroid_area_ratio_mean=}',flush=True)
         # print(f'{spheroid_area_ratio_std=}',flush=True)
 
-        alpha.append(round(float(df_sim['alpha'].iloc[0]),3))
-        beta.append(round(float(df_sim['beta'].iloc[0]),5))
+        alpha.append(round(math.log(float(df_sim['alpha'].iloc[0]))/100,3))
+        beta.append(round(math.log(float(df_sim['beta'].iloc[0]))/100,3))
     
     columns = np.unique(alpha) 
     index = np.flip(np.unique(beta))
@@ -278,8 +279,8 @@ def plots_alpha_vs_beta_spheroid_growth(data, simulation_name, save_folder, titl
     ax.figure.axes[-1].yaxis.set_label_position('left')
 
     ###  Set axis labels
-    plt.ylabel("Beta")
-    plt.xlabel("Alpha")
+    plt.ylabel(r"Beta [mM$^{-1}$]")
+    plt.xlabel(r"Alpha [mM$^{-1}$]")
 
     ### Set title, overlaied plots
     if title == True:

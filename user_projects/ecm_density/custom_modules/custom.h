@@ -93,7 +93,7 @@ class Options
 
 void setup_extracellular_matrix( void );
 
-double dot_product( const std::vector<double>& v , const std::vector<double>& w );
+double dot_product_ext( const std::vector<double>& v , const std::vector<double>& w );
 
 double sign_function (double number);
 
@@ -103,7 +103,11 @@ void cell_ecm_interaction_motility_speed( Cell* pCell, Phenotype& phenotype, dou
 
 void cell_ecm_interaction_motility_direction( Cell* pCell, Phenotype& phenotype, double dt );
 
-void ecm_update_from_cell_motility(Cell* pCell , Phenotype& phenotype , double dt);
+void ecm_remodelling(Cell* pCell , Phenotype& phenotype , double dt);
+
+void cell_ecm_adhesion(Cell* pCell , Phenotype& phenotype , double dt);
+
+void cell_ecm_repulsion(Cell* pCell , Phenotype& phenotype , double dt);
 
 void proliferation_inhibition( Cell* pCell, Phenotype& phenotype, double dt );
 

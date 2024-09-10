@@ -3,3 +3,8 @@
 /output
 *.o
 *.txt
+*.Identifier
+/results
+/config
+/custom_modules
+project

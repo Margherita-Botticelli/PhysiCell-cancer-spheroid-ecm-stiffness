@@ -38,7 +38,7 @@ def plots_spheroid_growth_over_time(data,save_folder,title=True):
 
     spheroid_area_ratio = spheroid_area / spheroid_area_ratio
 
-    plt.figure(figsize=(5,4),num=simulation)
+    plt.figure(figsize=(5,3),num=simulation)
 
     # print(f'Stage 1: data ready\n',flush=True)
     

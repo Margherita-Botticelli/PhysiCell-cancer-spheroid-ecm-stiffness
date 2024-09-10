@@ -181,8 +181,8 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, title=
     ax.add_artist(scalebar)
 
 
-    # text_kwargs = dict(ha='center', va='top', fontsize=18, color='white')
-    # plt.text(0, 350, f'Time {int(t/60)}h', **text_kwargs)
+    text_kwargs = dict(ha='center', va='top', fontsize=18, color='white')
+    plt.text(0, 350, f'Time {int(t/60)}h', **text_kwargs)
 
     # Labels and title (will need removed for journal - they will be added manually)
     # ax.set_xlabel(r'x [$\mu$m]',fontsize=12)

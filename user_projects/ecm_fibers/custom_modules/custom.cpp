@@ -194,55 +194,64 @@ void setup_extracellular_matrix( void )
 			// ecm.ecm_data[i].ecm_orientation[1] = sin(theta);
 			// ecm.ecm_data[i].ecm_orientation[2] = 0.0;
 			ecm.ecm_voxels[n].ecm_fiber_alignment = {cos(theta), sin(theta), 0.0};
-		}
 
-		// for starburst initialization 
-		else if(parameters.strings( "ecm_orientation_setup") == "starburst")
-		{
-			std::vector<double> position = ecm.ecm_mesh.voxels[n].center; 
-			normalize( &position ); 
-			ecm.ecm_voxels[n].ecm_fiber_alignment =  { position[0],position[1],0}; // oriented out (perpindeicular to concentric circles)
-			normalize(&ecm.ecm_voxels[n].ecm_fiber_alignment);
-		}
+			double spacing = parameters.doubles("ecm_dx");
+			double tumor_radius = parameters.doubles("tumor_radius");
+			double x = parameters.doubles("ecm_dx")/2;
+			double y = parameters.doubles("ecm_dx")/2;
 
-		// for circular initialization 
-		else if(parameters.strings( "ecm_orientation_setup") == "circular")
-		{
-			std::vector<double> position = ecm.ecm_mesh.voxels[n].center;; 
-			normalize( &position );
-			ecm.ecm_voxels[n].ecm_fiber_alignment =  { position[1],-position[0],0}; // oriented in cirlce
-			normalize(&ecm.ecm_voxels[n].ecm_fiber_alignment);
-		}
 
-		else if(parameters.strings( "ecm_orientation_setup") == "horizontal")
-		{
-			ecm.ecm_voxels[n].ecm_fiber_alignment =  { 1.0, 0.0, 0.0}; 
-			normalize(&ecm.ecm_voxels[n].ecm_fiber_alignment);
-		}
+			double x_outer = tumor_radius; 
 
-		else if(parameters.strings( "ecm_orientation_setup") == "vertical")
-		{
-			ecm.ecm_voxels[n].ecm_fiber_alignment=  { 0.0, 1.0, 0.0}; 
-			normalize(&ecm.ecm_voxels[n].ecm_fiber_alignment);
-		}
+			double ecm_density = 0; 
 
-		else if(parameters.strings( "ecm_orientation_setup") == "split")
-		{
-			std::vector<double> position = ecm.ecm_mesh.voxels[n].center; 
-			normalize( &position ); 
-
-			if(position[1]<=0)
+			int n = 0; 
+			int voxel_index;
+			double rate_div;
+			std::vector<double> pos;
+			while( y < tumor_radius )
 			{
-				ecm.ecm_voxels[n].ecm_fiber_alignment =  { 1,-1,0}; // oriented out (perpindeicular to concentric circles)
-				normalize(&ecm.ecm_voxels[n].ecm_fiber_alignment);
-			}
 
-			else
-			{
-				ecm.ecm_voxels[n].ecm_fiber_alignment =  { 1,1,0}; // oriented out (perpindeicular to concentric circles)
-				normalize(&ecm.ecm_voxels[n].ecm_fiber_alignment);				
-			}
+				double x = parameters.doubles("ecm_dx")/2;
+				
+				if( n % 2 == 1 )
+				{ x = 0.5*spacing; }
+				x_outer = sqrt( tumor_radius*tumor_radius - y*y ); 
+				
+				while( x < x_outer )
+				{
+					pos = {(x) , (y), 0.0};
+					voxel_index = microenvironment.nearest_voxel_index( pos);
+					ecm.ecm_voxels[voxel_index].density = ecm_density;
+					
+					if( fabs( y ) > 0.01 )
+					{
+						pos = {(x) , -(y), 0.0};
+						voxel_index = microenvironment.nearest_voxel_index( pos);
+						ecm.ecm_voxels[voxel_index].density = ecm_density;
+					}
+					
+					if( fabs( x ) > 0.01 )
+					{ 
+						pos = {-(x) , (y), 0.0};
+						voxel_index = microenvironment.nearest_voxel_index( pos);
+						ecm.ecm_voxels[voxel_index].density = ecm_density;	
+						
+						if( fabs( y ) > 0.01 )
+						{
+							pos = {-(x) , -(y), 0.0};
+							voxel_index = microenvironment.nearest_voxel_index( pos);
+							ecm.ecm_voxels[voxel_index].density = ecm_density;
+						}
+					}
 
+					x += spacing; 
+					
+				}
+				
+				y += spacing; 
+				n++; 
+			}
 		}
 
 		else
@@ -330,26 +339,6 @@ void setup_tissue( void )
 
 	}
 
-	/*******************************************Random initialization****************************************/
-		
-	else if(parameters.strings("cell_setup") == "random")
-	{
-		std::cout<<"string worked"<<std::endl;
-	
-		Cell* pC;
-		
-		for( int n = 0 ; n < 200 ; n++ )
-		{
-			pC = create_cell(); 
-			pC->assign_position( -450 + 900*UniformRandom() , -450 + 900*UniformRandom() , 0.0 );
-		}
-
-		std::cout<<"Cell's placed randomly on domain - this function uses a HARD CODED domain size!!!! WARNING!!!!!"<<std::endl;
-		std::cout<<" hit Enter to continue:"<<std::flush;
-		std::cin.get();
-
-	}
-	
 	/******************************************2D Spheroid initialization***************************************/
 	
 	else if(parameters.strings("cell_setup") == "lesion")
@@ -359,54 +348,30 @@ void setup_tissue( void )
 		//Get tumor radius from XML parameters
 
 		double tumor_radius = parameters.doubles("tumor_radius"); 
-		// double number_of_cells = parameters.ints("number_of_cells");
-		//std::cout<<"number_of_cells: "<<number_of_cells<<std::endl;
-
-		// if( parameters.ints("unit_test_setup") == 1)
-		// {
-		// 	tumor_radius = 150;
-		// }
-
-		// else
-		// {
-		// 	tumor_radius = parameters.doubles("tumor_radius");
-		// }
-
 
 		// these lines produce automatically calcuated equilibirum spacing for intiailizing cells, even when changing adh-rep parameters.
 
 		double cell_radius = cell_defaults.phenotype.geometry.radius;
-		// std::cout<<"cell_radius: "<<cell_radius<<std::endl;
-		// tumor_radius = sqrt( pow(cell_radius,2) * number_of_cells );
-		// std::cout<<"tumor_radius: "<<tumor_radius<<std::endl;
-
 		double relative_maximum_adhesion_distance = cell_defaults.phenotype.mechanics.relative_maximum_adhesion_distance;
-		// std::cout<<"relative_maximum_adhesion_distance: "<<relative_maximum_adhesion_distance<<std::endl; //relative_maximum_adhesion_distance;
 		double cell_adhesion = cell_defaults.phenotype.mechanics.cell_cell_adhesion_strength;
-		// std::cout<<"cell_adhesion: "<<cell_adhesion<<std::endl; 
 		double cell_repulsion = cell_defaults.phenotype.mechanics.cell_cell_repulsion_strength;
-		// std::cout<<"cell_repulsion: "<<cell_repulsion<<std::endl; 
+
 		double sqrt_adhesion_to_repulsion_ratio = sqrt(cell_adhesion/cell_repulsion);
 		
 		double cell_spacing = (1 - sqrt_adhesion_to_repulsion_ratio);
 		cell_spacing /= (0.5 * 1/cell_radius - 0.5 * sqrt_adhesion_to_repulsion_ratio/(relative_maximum_adhesion_distance * cell_radius));
 		// std::cout<<"cell_spacing: "<<cell_spacing<<std::endl;
 
-		
 		Cell* pCell = NULL; 
 		
-
 		double x = 0.0;
 		double x_outer = tumor_radius; 
 		double y = 0.0;
 
-
-		// if( parameters.ints("unit_test_setup") == 1 && parameters.ints("march_unit_test_setup") == 0)
-		// {
-		// 	cell_spacing = 1.90 * cell_radius;
-		// }
-
 		int n = 0; 
+		int voxel_index;
+		double rate_div;
+		std::vector<double> pos;
 		while( y < tumor_radius )
 		{
 			x = 0.0; 
@@ -421,7 +386,7 @@ void setup_tissue( void )
 				pCell = create_cell(cell_defaults);
 					
 				pCell->assign_position( x , y , 0.0 );
-				set_single_behavior(pCell,"cycle entry", 0);
+				set_single_behavior(pCell,"cycle entry", 0);	
 				
 				if( fabs( y ) > 0.01 )
 				{
@@ -443,6 +408,7 @@ void setup_tissue( void )
 						set_single_behavior(pCell,"cycle entry", 0);
 					}
 				}
+
 				x += cell_spacing; 
 				
 			}
@@ -454,63 +420,6 @@ void setup_tissue( void )
 		std::cout<<"Cell's placed in 2-lesion at center of domain"<<std::endl;
 	}
 
-	
-
-	/******************************************3D Spheroid initialization***************************************/
-
-	/*To come later*/
-
-	/************************************Circle of cells at R = 300 initialization***************************************/
-
-	else if(parameters.strings("cell_setup") == "circle of cells")
-	{
-		double theta2 = 0.0;
-		for (int a = 0; a<42; a++)
-		{
-			Cell* pCell = NULL;
-			pCell = create_cell(cell_defaults); 
-			pCell->assign_position( 300 * cos(theta2) , 300 * sin(theta2) , 0.0 );
-			theta2 += 0.14959952;
-		}
-
-	}
-
-	/************************************Line of cells at y = 0, x > 0 initialization***************************************/
-
-	else if(parameters.strings("cell_setup") == "cells at y = 0")
-	{
-
-		Cell* pCell = NULL; 
-		int n = default_microenvironment_options.X_range[0] + 10.0; 
-		while( n <= default_microenvironment_options.X_range[1] )
-		{
-			pCell = create_cell(cell_defaults); 
-
-			// To prevent droping cells in areas of high ECM curvature. 
-			while(abs(n) < 70)
-			{n = n + 30.0;}
-
-			pCell->assign_position( n , 0.0 , 0.0 );
-			n = n + 30.0;
-		}
-		std::cout<<"Cell's placed at y = 0"<<std::endl;
-	}
-
-	/******************************************Line of cells at x = left boundary + 10 initialization***************************************/
-	else if(parameters.strings("cell_setup") == "cells at left boundary/march")
-	{
-		
-		Cell* pCell = NULL; 
-		int n = default_microenvironment_options.X_range[0] + 10.0; 
-		while( n <= default_microenvironment_options.X_range[1] - 10.0 )
-		{
-			pCell = create_cell(cell_defaults);
-			pCell->assign_position( default_microenvironment_options.X_range[0] + 10.0 , n , 0.0 );
-			n = n + 10.0;
-		}
-		std::cout<<"Cell's placed at left boundary for march test"<<std::endl;
-	}
-
 	else
 	{
 		std::cout<<"WARNING!!! NO CELL SETUP SPECIFIED. SEE DOCUMENTATION and FIX"<<std::endl;
@@ -518,7 +427,6 @@ void setup_tissue( void )
 		abort();
 		return;
 	}
-
 
 	return;
 }
@@ -618,6 +526,8 @@ double sign_function (double number)
 
 void cell_ecm_interaction_motility_speed( Cell* pCell, Phenotype& phenotype, double dt )
 {
+	// Function that computes the motility speed as a results of cell-ECM interactions
+	
 	// Check if cell is dead
 	if(phenotype.death.dead == true)
 	{
@@ -628,14 +538,15 @@ void cell_ecm_interaction_motility_speed( Cell* pCell, Phenotype& phenotype, dou
 		std::cout<<"Cell is dead"<<std::endl;
 	}
 
-	// Updates cell bias vector and cell speed based on the ECM density, anisotropy, and fiber direction
 
+	// Find nearest voxel to cell's membrane or position
 	int voxel_index = 0;
 	if (parameters.strings("nearest_voxel_speed") == "membrane")
 	{
 		//Pick voxel closest to cell's membrane in direction of movement
 		std::vector<double> direction = {pCell->custom_data["total_velocity_x"], pCell->custom_data["total_velocity_y"], pCell->custom_data["total_velocity_z"]};
-		std::vector<double> scaled_direction = phenotype.geometry.radius * normalize(direction);
+		std::vector<double> scaled_direction = pCell->phenotype.geometry.radius * normalize(direction);
+
 		
 		// Calculating the position of the membrane in the direction of the cell
 		std::vector<double> position_membrane = pCell->position + scaled_direction;
@@ -660,7 +571,6 @@ void cell_ecm_interaction_motility_speed( Cell* pCell, Phenotype& phenotype, dou
 		return;
 	}
 
-
 	// Finding out the ECM density
 	double ecm_density = ecm.ecm_voxels[voxel_index].density;
 
@@ -676,8 +586,6 @@ void cell_ecm_interaction_motility_speed( Cell* pCell, Phenotype& phenotype, dou
 		// std::cout<<"Magnitude of motility vector is "<< pCell->phenotype.motility.migration_speed<<std::endl;
 	}
 	
-	// std::cout<<"migration_speed: "<<pCell->phenotype.motility.migration_speed<<std::endl;
-
 	// We MUST set migration bias at 1.0 so that standard update_motility function doesn't add random motion. 
 	phenotype.motility.migration_bias = 1.0; 
 
@@ -686,67 +594,74 @@ void cell_ecm_interaction_motility_speed( Cell* pCell, Phenotype& phenotype, dou
 	double rho_high = pCell->custom_data["rho_high"];
 	double rho_ideal = pCell->custom_data["rho_ideal"];
 
-	// Relation between ribose concentration and density
-
 	// Get ribose concentration
 	double ribose_concentration = parameters.doubles("ribose_concentration");
 	
-	// // Ribose coefficient
-	// double c_ribose = 1 - atan(ribose_concentration / 100) * 2 / pi;
-
 	// Get value of max migration speed
 	double max_migration_speed = get_single_base_behavior(pCell,"migration speed");
-	// std::cout<<"max_migration_speed: "<<max_migration_speed<<std::endl;
+	double alpha = parameters.doubles("alpha");
 
-	// Compute cell speed
-	if (ecm_density <= rho_low)
-	{
-		pCell->phenotype.motility.migration_speed = 0.0;
-	}
+	// Function for dependence on ribose concentration
+	max_migration_speed *= pow(alpha,-ribose_concentration/100);
+	// std::cout<<"alpha:"<<alpha;
+	// std::cout<<" max_migration_speed:"<<max_migration_speed<<std::endl;
 
-	else if (rho_low < ecm_density && ecm_density <= rho_ideal)
-	{
-		// for base speed: y - y_1 = m (x - x_1) or y = m (x - x_1) + y_1
-		// Assuming that y_1 = 0 --> y = m (x - x_1)
-		// m = rise/run = (speed(rho_ideal) - speed(rho_l)/(rho_ideal - rho_l)). Same for rho_h
-		// Assuming that speed(rho_ideal) = 1.0 and speed(rho_l (or rho_h)) = 0.0, m = 1/(rho_ideal - rho_l)
-		// y = 1/(x_2 - x_1) * (x - x_1) --> speed_base = 1/(rho_ideal - rho_l) * (rho - rho_l)
-		// So finally: speed = normalized_value * max_speed * rules_modifier * (1/(rho_ideal - rho_l) * (rho - rho_l))
 
-		// pCell->phenotype.motility.migration_speed = get_single_base_behavior( pCD, "migration speed" ) * ( 1/(rho_ideal - rho_high) * (ECM_density - rho_high)); 
+	// // Compute cell speed
+	// if (ecm_density <= rho_low)
+	// {
+	// 	pCell->phenotype.motility.migration_speed = 0.0;
+	// }
 
-		pCell->phenotype.motility.migration_speed *= max_migration_speed; 
-		pCell->phenotype.motility.migration_speed *= ( 1/(rho_ideal - rho_low) * (ecm_density - rho_low)); 
-	}
+	// else if (rho_low < ecm_density && ecm_density <= rho_ideal)
+	// {
+	// 	// for base speed: y - y_1 = m (x - x_1) or y = m (x - x_1) + y_1
+	// 	// Assuming that y_1 = 0 --> y = m (x - x_1)
+	// 	// m = rise/run = (speed(rho_ideal) - speed(rho_l)/(rho_ideal - rho_l)). Same for rho_h
+	// 	// Assuming that speed(rho_ideal) = 1.0 and speed(rho_l (or rho_h)) = 0.0, m = 1/(rho_ideal - rho_l)
+	// 	// y = 1/(x_2 - x_1) * (x - x_1) --> speed_base = 1/(rho_ideal - rho_l) * (rho - rho_l)
+	// 	// So finally: speed = normalized_value * max_speed * rules_modifier * (1/(rho_ideal - rho_l) * (rho - rho_l))
 
-	else if (rho_ideal < ecm_density && ecm_density < rho_high )
-	{
 
-		// for base speed: y - y_1 = m (x - x_1) or y = m (x - x_1) + y_1
-		// Assuming that y_1 = 0 --> y = m (x - x_1)
-		// m = rise/run = (speed(rho_ideal) - speed(rho_l)/(rho_ideal - rho_l)). Same for rho_h
-		// Assuming that speed(rho_ideal) = 1.0 and speed(rho_l (or rho_h)) = 0.0, m = 1/(rho_ideal - rho_l)
-		// y = 1/(x_2 - x_1) * (x - x_1) --> speed_base = 1/(rho_ideal - rho_l) * (rho - rho_l)
-		// So finally: speed = normalized_value * max_speed * rules_modifier * (1/(rho_ideal - rho_l) * (rho - rho_l))
+	// 	// pCell->phenotype.motility.migration_speed = get_single_base_behavior( pCD, "migration speed" ) * ( 1/(rho_ideal - rho_high) * (ECM_density - rho_high)); 
 
-		// pCell->phenotype.motility.migration_speed = get_single_base_behavior( pCD, "migration speed" ) * ( 1/(rho_ideal - rho_high) * (ECM_density - rho_high)); 
+
+	// 	// pCell->phenotype.motility.migration_speed *= max_migration_speed; 
+	// 	// pCell->phenotype.motility.migration_speed *= ( 1/(rho_ideal - rho_low) * (ecm_density - rho_low)); 
+
+	// }
+
+	// // else if (rho_ideal < ecm_density && ecm_density < rho_high )
+	// // {
+
+	// // 	// for base speed: y - y_1 = m (x - x_1) or y = m (x - x_1) + y_1
+	// // 	// Assuming that y_1 = 0 --> y = m (x - x_1)
+	// // 	// m = rise/run = (speed(rho_ideal) - speed(rho_l)/(rho_ideal - rho_l)). Same for rho_h
+	// // 	// Assuming that speed(rho_ideal) = 1.0 and speed(rho_l (or rho_h)) = 0.0, m = 1/(rho_ideal - rho_l)
+	// // 	// y = 1/(x_2 - x_1) * (x - x_1) --> speed_base = 1/(rho_ideal - rho_l) * (rho - rho_l)
+	// // 	// So finally: speed = normalized_value * max_speed * rules_modifier * (1/(rho_ideal - rho_l) * (rho - rho_l))
+
+	// // 	// pCell->phenotype.motility.migration_speed = get_single_base_behavior( pCD, "migration speed" ) * ( 1/(rho_ideal - rho_high) * (ECM_density - rho_high)); 
 		
-		pCell->phenotype.motility.migration_speed *= max_migration_speed; 
-		pCell->phenotype.motility.migration_speed *= ( 1/(rho_ideal - rho_high) * (ecm_density - rho_high)); 
-	}
+	// // 	pCell->phenotype.motility.migration_speed *= max_migration_speed; 
+	// // 	pCell->phenotype.motility.migration_speed *= ( 1/(rho_ideal - rho_high) * (ecm_density - rho_high)); 
+	// // }
 
-	else //if (f_stiff >= rho_high)
-	{
-		pCell->phenotype.motility.migration_speed = 0.0;
-	}	
+	// else
+	// {
+	// 	pCell->phenotype.motility.migration_speed *= max_migration_speed;
+	// }	
 
-	// std::cout<<"migration_speed: "<<pCell->phenotype.motility.migration_speed<<std::endl;
+	pCell->phenotype.motility.migration_speed *= 4 * max_migration_speed * ecm_density;
+
 
 	return; 
 }
 
 void cell_ecm_interaction_motility_direction( Cell* pCell, Phenotype& phenotype, double dt )
 {
+	// Function to compute motility direction as a result of cell-ECM interactions
+
 	if(phenotype.death.dead == true)
 	{
 		phenotype.motility.is_motile = false;
@@ -756,165 +671,226 @@ void cell_ecm_interaction_motility_direction( Cell* pCell, Phenotype& phenotype,
 		std::cout<<"Cell is dead"<<std::endl;
 	}
 
-	// Select random direction (for random portion of motility vector) and begin building updated motility direction vector
-	// (note - there is NO memeory of previous direction in this model - previous ECM-based motility used the current 
-	// velocity vector to build off, not a random one - this could produce divergent behaviors between models)
-
-	// See lab note book for more notes - MUST start with random vector. In the old method I defintiely used the previous motility vector in the method, but makes no sense here!
-
-	int voxel_index = 0;
-	if (parameters.strings("nearest_voxel_direction") == "membrane")
-	{
-		//Pick voxel closest to cell's membrane in direction of movement
-		std::vector<double> direction = {pCell->custom_data["total_velocity_x"], pCell->custom_data["total_velocity_y"], pCell->custom_data["total_velocity_z"]};
-		std::vector<double> scaled_direction = phenotype.geometry.radius * normalize(direction);
+	else{
 		
-		// Calculating the position of the membrane in the direction of the cell
-		std::vector<double> position_membrane = pCell->position + scaled_direction;
-		pCell->custom_data["point_on_membrane_x"] = position_membrane[0];
-		pCell->custom_data["point_on_membrane_y"] = position_membrane[1];
-		pCell->custom_data["point_on_membrane_z"] = position_membrane[2];
+		// Find nearest voxel to cell's membrane or position
+		int voxel_index = 0;
+		if (parameters.strings("nearest_voxel_direction") == "membrane")
+		{
+			//Pick voxel closest to cell's membrane in direction of movement
+			std::vector<double> direction = {pCell->custom_data["total_velocity_x"], pCell->custom_data["total_velocity_y"], pCell->custom_data["total_velocity_z"]};
+			std::vector<double> scaled_direction = pCell->phenotype.geometry.radius * normalize(direction);
+
+			
+			// Calculating the position of the membrane in the direction of the cell
+			std::vector<double> position_membrane = pCell->position + scaled_direction;
+			pCell->custom_data["point_on_membrane_x"] = position_membrane[0];
+			pCell->custom_data["point_on_membrane_y"] = position_membrane[1];
+			pCell->custom_data["point_on_membrane_z"] = position_membrane[2];
+			
+			// Computing the index of the voxel at that position
+			voxel_index = microenvironment.nearest_voxel_index( position_membrane );
+		}
 		
-		// Computing the index of the voxel at that position
-		voxel_index = microenvironment.nearest_voxel_index( position_membrane );
+		else if (parameters.strings("nearest_voxel_direction") == "position")
+		{
+			// Computing the index of the voxel at cell position
+			voxel_index = microenvironment.nearest_voxel_index( pCell->position );
+		}
+
+		else
+		{
+			std::cout<<"Nearest voxel for computing motility direction not defined!"<<std::endl;
+			abort();
+			return;
+		}
+		
+		// Finding out the ECM density, anisotropy and fibre orientation
+		double ecm_density = ecm.ecm_voxels[voxel_index].density;
+		double anisotropy = ecm.ecm_voxels[voxel_index].anisotropy; 
+		std::vector<double> fiber_orientation = ecm.ecm_voxels[voxel_index].ecm_fiber_alignment;
+
+		// Get ECM chemotaxis bias and cell sensitivity for ECM 
+		double ecm_chemotaxis_bias = pCell->custom_data["ecm_chemotaxis_bias"];
+		double ecm_sensitivity = pCell->custom_data["ecm_sensitivity"];
+
+		// get random vector - cell's "intended" or chosen random direction
+		std::vector<double> d_random(3,0.0);
+		if( phenotype.motility.restrict_to_2D == true )
+		{ 
+			d_random = UniformOnUnitCircle(); 
+		}
+		else
+		{ 
+			d_random = UniformOnUnitSphere(); 
+		}
+
+		std::vector<double> d_pref;
+
+		// Compute chemotaxis contribution to motility preferred direction
+		if(ecm_chemotaxis_bias == 0)
+		{
+			// Preferred direction given by random vector
+			d_pref = d_random;
+		}
+		else
+		{
+			// get vector for chemotaxis (sample uE)
+			static int substrate_index = microenvironment.find_density_index( "substrate" ); 
+			std::vector<double> chemotaxis_grad = pCell->nearest_gradient(substrate_index);
+			normalize( &chemotaxis_grad ); 
+
+			//combine cell chosen random direction and chemotaxis direction (like standard update_motility function)
+			d_pref = (1 - ecm_chemotaxis_bias) * d_random + ecm_chemotaxis_bias * chemotaxis_grad;
+		}
+
+		normalize( &d_pref ); 
+
+		// Compute fiber orientation and anisotropy contribution to motility preferred direction
+		std::vector<double> motility_direction;
+		if (parameters.strings("ecm_definition") == "ecm_density")
+		{
+			motility_direction = d_pref;
+		}
+		else if(parameters.strings("ecm_definition") == "ecm_fibers")
+		{
+			// to determine direction along fiber_orientation, find part of d_choice that is perpendicular to fiber_orientation; 
+			std::vector<double> d_perp = d_pref - dot_product_ext(d_pref, fiber_orientation) * fiber_orientation; 
+			normalize( &d_perp ); 
+			
+			// find constants to span d_choice with d_perp and fiber_orientation
+			double c_1 = dot_product_ext( d_pref , d_perp ); 
+			double c_2 = dot_product_ext( d_pref, fiber_orientation ); 
+
+			// calculate bias away from directed motility - combination of sensitity to ECM and anisotropy
+			double gamma = ecm_sensitivity * anisotropy; // at low values, directed motility vector is recoved. At high values, fiber direction vector is recovered.
+			
+			// Compute motility direction
+			motility_direction = (1.0 - gamma) * c_1 * d_perp + c_2 * fiber_orientation;
+		}
+		else
+		{
+			std::cout<<"ECM definition no declared!!!"<<std::endl;
+			abort();
+			return;
+		}
+
+		pCell->phenotype.motility.migration_bias_direction = motility_direction;
+
 	}
+	return;
+}
+
+
+void cell_ecm_repulsion(Cell* pCell , Phenotype& phenotype , double dt) 
+{
+	std::vector<double> velocity = pCell->velocity;
+
+	double cell_radius = pCell->phenotype.geometry.radius;
+
+	//Pick voxel closest to cell's membrane in direction of movement
+	std::vector<double> scaled_direction = cell_radius * normalize(velocity);
 	
-	else if (parameters.strings("nearest_voxel_direction") == "position")
+	// Calculating the position of the membrane in the direction of the cell
+	std::vector<double> position_membrane = pCell->position + scaled_direction;
+
+	// Computing the index of the voxel at that position
+	int voxel_index_memb = microenvironment.nearest_voxel_index( position_membrane );
+
+	// Nearest voxel to cell position
+	std::vector<double> position = pCell->position;
+	int voxel_index_pos = microenvironment.nearest_voxel_index( position );
+
+	double ecm_density = ecm.ecm_voxels[voxel_index_memb].density;
+	ecm_density = std::min( ecm_density, 1.0 ); 
+	// std::cout<<"ecm_density: "<<ecm_density<<std::endl;
+
+	// if (ecm_density > 0.49999)
+	if (ecm_density > 0.000001)
 	{
-		// Computing the index of the voxel at cell position
-		voxel_index = microenvironment.nearest_voxel_index( pCell->position );
+		// std::cout<<"ecm_density = 1"<<std::endl;
+
+		double distance = 0; 
+		std::vector<double> displacement;
+		displacement.resize(3,0.0);
+		std::vector<double> voxel_center = microenvironment.voxels(voxel_index_memb).center;
+
+		for( int i = 0 ; i < 3 ; i++ ) 
+		{ 
+			displacement[i] = position_membrane[i] - voxel_center[i]; 
+			distance += displacement[i] * displacement[i]; 
+		}
+
+		// Make sure that the distance is not zero
+		distance = std::max(sqrt(distance), 0.0001); 
+		// std::cout<<"distance: "<<distance<<std::endl;
+
+
+		// double max_interactive_distance = parameters.doubles("ecm_dx") * sqrt(2) / 2 + cell_radius;
+		double max_interactive_distance = parameters.doubles("ecm_dx") * sqrt(2) / 2;
+
+		double temp_ecm_rep = 0;
+
+		if (distance < max_interactive_distance)
+		{
+			// temp_ecm_rep = 2 * (ecm_density - 0.5);
+			temp_ecm_rep = ecm_density;
+			temp_ecm_rep *= norm(velocity);
+			// std::cout<<"temp_ecm_rep: "<<temp_ecm_rep<<std::endl;
+		}
+
+		if(temp_ecm_rep == 0)
+		{
+			return;
+		}
+
+		pCell->velocity -= temp_ecm_rep * normalize(velocity);	
 	}
-
-	else
-	{
-		std::cout<<"Nearest voxel for computing motility direction not defined!"<<std::endl;
-		abort();
-		return;
-	}
-	
-
-	// // Computing the index of the voxel at cell position
-	// int voxel_index = microenvironment.nearest_voxel_index( pCell->position );
-
-	// Finding out the ECM density, anisotropy and fibre orientation
-	double ecm_density = ecm.ecm_voxels[voxel_index].density;
-	double anisotropy = ecm.ecm_voxels[voxel_index].anisotropy; 
-	std::vector<double> fiber_orientation = ecm.ecm_voxels[voxel_index].ecm_fiber_alignment;
-
-	// Get ECM chemotaxis bias and cell sensitivity for ECM 
-	double ecm_chemotaxis_bias = pCell->custom_data["ecm_chemotaxis_bias"];
-	double ecm_sensitivity = pCell->custom_data["ecm_sensitivity"];
-
-	// get random vector - cell's "intended" or chosen random direction
-	std::vector<double> d_random(3,0.0);
-	if( phenotype.motility.restrict_to_2D == true )
-	{ 
-		d_random = UniformOnUnitCircle(); 
-	}
-	else
-	{ 
-		d_random = UniformOnUnitSphere(); 
-	}
-
-	std::vector<double> d_pref;
-
-	if(ecm_chemotaxis_bias == 0)
-	{
-		// Preferred direction given by random vector
-		d_pref = d_random;
-	}
-	else
-	{
-		// get vector for chemotaxis (sample uE)
-		static int substrate_index = microenvironment.find_density_index( "substrate" ); 
-		std::vector<double> chemotaxis_grad = pCell->nearest_gradient(substrate_index);
-		normalize( &chemotaxis_grad ); 
-
-		//combine cell chosen random direction and chemotaxis direction (like standard update_motility function)
-		d_pref = (1 - ecm_chemotaxis_bias) * d_random + ecm_chemotaxis_bias * chemotaxis_grad;
-	}
-
-	normalize( &d_pref ); 
-
-	std::vector<double> motility_direction;
-	if (parameters.strings("ecm_definition") == "ecm_density")
-	{
-		motility_direction = d_pref;
-	}
-	else if(parameters.strings("ecm_definition") == "ecm_fibers")
-	{
-		// to determine direction along fiber_orientation, find part of d_choice that is perpendicular to fiber_orientation; 
-		std::vector<double> d_perp = d_pref - dot_product_ext(d_pref, fiber_orientation) * fiber_orientation; 
-		normalize( &d_perp ); 
-		
-		// find constants to span d_choice with d_perp and fiber_orientation
-		double c_1 = dot_product_ext( d_pref , d_perp ); 
-		double c_2 = dot_product_ext( d_pref, fiber_orientation ); 
-
-		// calculate bias away from directed motility - combination of sensitity to ECM and anisotropy
-		double gamma = ecm_sensitivity * anisotropy; // at low values, directed motility vector is recoved. At high values, fiber direction vector is recovered.
-		
-		// Compute motility direction
-		motility_direction = (1.0 - gamma) * c_1 * d_perp + c_2 * fiber_orientation;
-	}
-	else
-	{
-		std::cout<<"ECM definition no declared!!!"<<std::endl;
-		abort();
-		return;
-	}
-
-	pCell->phenotype.motility.migration_bias_direction = motility_direction;
-	// normalize( &(phenotype.motility.motility_vector) );
 
 	return;
 }
 
-void ecm_update_from_cell_velocity(Cell* pCell , Phenotype& phenotype , double dt) 
+
+void ecm_remodelling(Cell* pCell , Phenotype& phenotype , double dt) 
 {
+	// // Get threshold neighbours parameter
+	// int overcrowding_threshold = pCell->custom_data["overcrowding_threshold"];
+	// //std::cout<<"overcrowding_threshold = "<<overcrowding_threshold<<std::endl;
+
+	// // Get cell's neighbours 
+	// int n_attached =  pCell->state.neighbors.size();
+
+	// if (n_attached >= overcrowding_threshold)
+	// {
+	// 	return;
+	// }
+
 	int voxel_index = microenvironment.nearest_voxel_index( pCell->position );
-
-	// Relation between ribose concentration and density
-	double ribose_concentration = parameters.doubles("ribose_concentration");
-	// Ribose coefficient
-	double pi = 3.1415926535897932384;
-	double c_ribose = 1 - atan(ribose_concentration / 50) * 2 / pi;
-
 
 	/**************** Change in ECM density***************/
 
-	// Get rate of ECM degradation (dependent on ribose concentration)
-	double r_density = pCell->custom_data["ecm_density_rate"]; // * c_ribose; // 1.0;
-	// if(PhysiCell_globals.current_time == 0)
-	// 	std::cout<<"r_density = "<<r_density<<std::endl;
+	// Get rate of ECM degradation 
+	double r_density = pCell->custom_data["ecm_density_rate"]; 
+	
+	// Ribose concentration 
+	double ribose_concentration = parameters.doubles("ribose_concentration");
+	double beta = parameters.doubles("beta");
 
-	// Set density target to zero
-	// double density_target = 0;
-	double density_target = pCell->custom_data["rho_ideal"];
+	r_density *= pow(beta,-ribose_concentration/100);
 
-	// Get threshold neighbours parameter
-	int overcrowding_threshold = pCell->custom_data["overcrowding_threshold"];
+	// Set density target 
+	// double density_target = pCell->custom_data["rho_ideal"];
+	double density_target = 0;
 
 	//Pick voxel closest to cell's membrane in direction of movement
 	std::vector<double> direction = {pCell->custom_data["total_velocity_x"], pCell->custom_data["total_velocity_y"], pCell->custom_data["total_velocity_z"]};
-	std::vector<double> scaled_direction = phenotype.geometry.radius * normalize(direction);
+	std::vector<double> scaled_direction = pCell->phenotype.geometry.radius * normalize(direction);
 
 	// Calculating the position of the membrane in the direction of the cell
 	std::vector<double> position_membrane = pCell->position + scaled_direction;
 	pCell->custom_data["point_on_membrane_x"] = position_membrane[0];
 	pCell->custom_data["point_on_membrane_y"] = position_membrane[1];
 	pCell->custom_data["point_on_membrane_z"] = position_membrane[2];
-
-
-	// if(pCell->state.neighbors.size() < overcrowding_threshold)
-
-	// 	density_target = pCell->custom_data["rho_ideal"];
-
-	// 	if(parameters.strings("nearest_voxel_remodeling") == "membrane")
-	// 	{
-	// 		// Computing the index of the voxel at that position
-	// 		voxel_index = microenvironment.nearest_voxel_index( position_membrane );
-	// 	}
 
 	if(parameters.strings("nearest_voxel_remodeling") == "membrane")
 	{
@@ -946,7 +922,7 @@ void ecm_update_from_cell_velocity(Cell* pCell , Phenotype& phenotype , double d
 		double migration_speed = pCell->phenotype.motility.migration_speed;
 
 		// Compute fibre realignment rate
-		double r_f0 = pCell->custom_data["fiber_realignment_rate"];// * c_ribose; //* (1 - 0.99 * c_ribose ); // * (2 - c_ribose) /2; // (2 + c_ribose) / 3; // 1.0;
+		double r_f0 = pCell->custom_data["fiber_realignment_rate"];
 		double r_fiber = r_f0 * migration_speed * (1 - anisotropy);
 
 		double ddotf;
@@ -957,13 +933,6 @@ void ecm_update_from_cell_velocity(Cell* pCell , Phenotype& phenotype , double d
 		normalize(&norm_cell_motility);
 		
 		ddotf = dot_product_ext(fiber_orientation, norm_cell_motility);
-		
-		// if(PhysiCell_globals.current_time >600)
-		// {
-		// 	std::cout<<"Motility vector nomalized: "<< norm_cell_motility<<std::endl;
-		// 	std::cout<<"ddotf: "<< ddotf<<std::endl;
-		// 	std::cout<<"fiber orientation before: "<< ecm.ecm_voxels[voxel_index].ecm_fiber_alignment<<std::endl;
-		// }
 
 		// flips the orientation vector so that it is aligned correctly with the moving cell for proper reoirentation later.
 		fiber_orientation = sign_function(ddotf) * fiber_orientation; 
@@ -990,8 +959,8 @@ void ecm_update_from_cell_velocity(Cell* pCell , Phenotype& phenotype , double d
 	
 		/**************************** Cell-ECM Anisotropy Modification ******************/
 
-		// Compute anisotropy update rate (dependent on ribose concentration)
-		double r_a0 = pCell->custom_data["anisotropy_increase_rate"];// * c_ribose; // * (2 + c_ribose) / 3; // min-1
+		// Compute anisotropy update rate 
+		double r_a0 = pCell->custom_data["anisotropy_increase_rate"]; // min-1
 		
 		double r_anisotropy = r_a0 * migration_speed;
 		
@@ -1018,30 +987,30 @@ void proliferation_inhibition( Cell* pCell, Phenotype& phenotype, double dt )
 
 	// Get cell's neighbours 
 	int n_attached =  pCell->state.neighbors.size();
-	//std::cout<<"neighbours = "<<neighbors<<std::endl;
-	
+
 	// Proliferation depends on number of cells in contact
 	double proliferation_rate = get_single_base_behavior(pCell,"cycle entry");
-	// std::cout<<"base proliferation_rate = "<<proliferation_rate<<std::endl;
-	proliferation_rate *= decreasing_linear_response_function(n_attached,0,overcrowding_threshold);
-	// std::cout<<"proliferation rate: "<<proliferation_rate;
-	// std::cout<<" attached cells: "<<n_attached<<std::endl;
+
+	if (n_attached >= overcrowding_threshold)
+	{
+		proliferation_rate = 0;
+	}
+	// proliferation_rate *= decreasing_linear_response_function(n_attached,2,overcrowding_threshold);
 
 	// Dependence on ECM density
 	// Computing the index of the voxel at cell position
 	int voxel_index = microenvironment.nearest_voxel_index( pCell->position );
 
-	proliferation_rate *= 1 - ecm.ecm_voxels[voxel_index].density;
-	// std::cout<<"ECM density: "<<ecm.ecm_voxels[voxel_index].density;
-	// std::cout<<" attached cells: "<<n_attached;
-	// std::cout<<" proliferation rate: "<<proliferation_rate<<std::endl;
+	// if (ecm.ecm_voxels[voxel_index].density == 1)
+	// {
+	// 	proliferation_rate = 0;
+	// }
 
-	// // Relation between ribose concentration and density
-	// double ribose_concentration = parameters.doubles("ribose_concentration");
 
+	proliferation_rate *= 2 * (1 - ecm.ecm_voxels[voxel_index].density);
+	
 	// Set new proliferation rate
 	set_single_behavior(pCell,"cycle entry", proliferation_rate);
-	//std::cout<<"proliferation_rate = "<<get_single_behavior(pCell,"cycle entry")<<std::endl;
 }
 
 
@@ -1052,20 +1021,15 @@ void custom_update_cell_velocity( Cell* pCell, Phenotype& phenotype, double dt)
 
 	// Assign speed to motility vector with same motility direction
 	pCell->phenotype.motility.motility_vector = pCell->phenotype.motility.migration_bias_direction; 
-	// std::cout<<"motility_vector: "<<phenotype.motility.motility_vector<<std::endl;
 	normalize( &(pCell->phenotype.motility.motility_vector) ); 
-
-	// pCell->phenotype.motility.migration_speed = 0;
-
-	// std::cout<<"motility_vector after normalize: "<<phenotype.motility.motility_vector<<std::endl;
 	pCell->phenotype.motility.motility_vector *= pCell->phenotype.motility.migration_speed;
-	// std::cout<<"motility_vector times speed: "<<phenotype.motility.motility_vector<<std::endl;
 
 	/********************* Update standard velocity ******************************/
 	
 	// Calling the standard update velocity of PhysiCell
 	standard_update_cell_velocity(pCell, phenotype, dt);
-	// std::cout<<"motility_vector after standard update: "<<phenotype.motility.motility_vector<<std::endl;
+
+	cell_ecm_repulsion(pCell, phenotype, dt);
 
 	/********************************************SAVE TOTAL SPEED AND VELOCITY DATA*******************************************/
 	// Compute total cell's speed and velocity
@@ -1084,7 +1048,7 @@ void phenotype_function( Cell* pCell, Phenotype& phenotype, double dt )
 
 void custom_function( Cell* pCell, Phenotype& phenotype , double dt )
 { 
-	ecm_update_from_cell_velocity(pCell,phenotype,dt);
+	ecm_remodelling(pCell,phenotype,dt);
 
 	proliferation_inhibition(pCell,phenotype,dt);
 	
