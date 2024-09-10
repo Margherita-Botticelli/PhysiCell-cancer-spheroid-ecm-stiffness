@@ -21,7 +21,6 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-
 if __name__ == '__main__':
     
     #### Figure resolution
@@ -32,7 +31,7 @@ if __name__ == '__main__':
     plt.style.use('seaborn-v0_8-colorblind')
 
     #### Select project
-    proj = 'ecm_density' # 'tests' # 
+    proj = 'ecm_density' # 'tests' # 'ecm_fibres' # 
 
     #### Save folder and data folder
     save_folder = f'../results/{proj}/'  
@@ -46,14 +45,13 @@ if __name__ == '__main__':
     # simulations_multi = [list(range(242,245))]
     # simulations_multi = [list(range(241,290))]
   
-        
     #### Replacing dataframes True or False
     replacing = False
     
     #### Ribose concentrations
     riboses = [0]#,50,200] #[0]#,50,200]
 
-    #### Random seeds
+    #### Random seeds, indicate number of seeds
     n_seeds = 1
     seeds = list(range(0,n_seeds))
 
@@ -64,6 +62,7 @@ if __name__ == '__main__':
     time_point_images = False
     times = 'all' # [96*60] # [24*60,96*60] # [24*60] # [24*60,48*60,72*60,96*60] # [24*60,96*60] # 
     video = False
+    statistics = False
 
 
     for simulations in simulations_multi:
@@ -115,7 +114,6 @@ if __name__ == '__main__':
 
         print('Dataframe ready!\n',flush=True)
 
-
         ########## PLOTS OVER TIME ###########
         if plots_over_time==True:
             for sim in simulations:
@@ -126,8 +124,6 @@ if __name__ == '__main__':
                     plots_cell_number_over_time(data,save_folder,title)
 
                 plt.close('all')
-
-
 
         data_spheroid_growth = pd.DataFrame()
         data_cluster = pd.DataFrame()
@@ -252,8 +248,8 @@ if __name__ == '__main__':
         #                 cluster_function(data,save_folder,figure=False)
         #     # plt.close()
 
-
-        data = df[df['t'] == 96*60]
-        print(data,flush=True)
-        delaunay_distance_function(data,save_folder=save_folder,figure=True)
-        spheroid_area_function(data,save_folder=save_folder,figure=True)
+        if statistics==True:
+            data = df[df['t'] == 96*60]
+            print(data,flush=True)
+            delaunay_distance_function(data,save_folder=save_folder,figure=True)
+            spheroid_area_function(data,save_folder=save_folder,figure=True)
