@@ -57,7 +57,7 @@ def snapshot_data(ribose, simulation, seed,snapshot,data_folder):
         'target_solid_nuclear', 'target_fluid_fraction', 'nuclear_radius', 'surface_area', 'cell_BM_adhesion_strength', 'cell_BM_repulsion_strength', 'cell_adhesion_affinities', 'attachment_elastic_constant', 'attachment_rate', 'detachment_rate', 'is_motile', 
         'migration_bias', 'chemotaxis_index', 'chemotaxis_direction', 'chemotactic_sensitivities', 'secretion_rates', 'uptake_rates', 
         'saturation_densities', 'net_export_rates', 'internalized_total_substrates', 'fraction_released_at_death', 'fraction_transferred_when_ingested', 
-        'dead_phagocytosis_rate', 'live_phagocytosis_rates', 'attack_rates', 'damage_rate', 'fusion_rates', 'transformation_rates', 'ecm_stiffness','ribose_concentration']
+        'dead_phagocytosis_rate', 'live_phagocytosis_rates', 'attack_rates', 'damage_rate', 'fusion_rates', 'transformation_rates', 'ribose_concentration']
 
     cell_df = cell_df.drop(cell_var_remove, axis=1)
 
