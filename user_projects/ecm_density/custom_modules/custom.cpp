@@ -207,9 +207,8 @@ void setup_extracellular_matrix( void )
 			std::vector<double> pos;
 			while( y < tumor_radius )
 			{
-
 				double x = parameters.doubles("ecm_dx")/2;
-				
+			
 				if( n % 2 == 1 )
 				{ x = 0.5*spacing; }
 				x_outer = sqrt( tumor_radius*tumor_radius - y*y ); 
@@ -240,11 +239,8 @@ void setup_extracellular_matrix( void )
 							ecm.ecm_voxels[voxel_index].density = ecm_density;
 						}
 					}
-
 					x += spacing; 
-					
 				}
-				
 				y += spacing; 
 				n++; 
 			}
@@ -525,14 +521,12 @@ void cell_ecm_adhesion_speed( Cell* pCell, Phenotype& phenotype, double dt )
 	{
 		//Pick voxel closest to cell's membrane in direction of movement
 		std::vector<double> direction = {pCell->custom_data["total_velocity_x"], pCell->custom_data["total_velocity_y"], pCell->custom_data["total_velocity_z"]};
-		std::vector<double> scaled_direction = pCell->phenotype.geometry.radius * normalize(direction);
+		normalize(&direction);
+		std::vector<double> scaled_direction = pCell->phenotype.geometry.radius * direction;
 
 		// Calculating the position of the membrane in the direction of the cell
 		std::vector<double> position_membrane = pCell->position + scaled_direction;
-		pCell->custom_data["point_on_membrane_x"] = position_membrane[0];
-		pCell->custom_data["point_on_membrane_y"] = position_membrane[1];
-		pCell->custom_data["point_on_membrane_z"] = position_membrane[2];
-		
+
 		// Computing the index of the voxel at that position
 		voxel_index = microenvironment.nearest_voxel_index( position_membrane );
 	}
@@ -604,14 +598,12 @@ void cell_ecm_adhesion_direction( Cell* pCell, Phenotype& phenotype, double dt )
 	{
 		//Pick voxel closest to cell's membrane in direction of movement
 		std::vector<double> direction = {pCell->custom_data["total_velocity_x"], pCell->custom_data["total_velocity_y"], pCell->custom_data["total_velocity_z"]};
-		std::vector<double> scaled_direction = pCell->phenotype.geometry.radius * normalize(direction);
+		normalize(&direction);
+		std::vector<double> scaled_direction = pCell->phenotype.geometry.radius * direction;
 
 		// Calculating the position of the membrane in the direction of the cell
 		std::vector<double> position_membrane = pCell->position + scaled_direction;
-		pCell->custom_data["point_on_membrane_x"] = position_membrane[0];
-		pCell->custom_data["point_on_membrane_y"] = position_membrane[1];
-		pCell->custom_data["point_on_membrane_z"] = position_membrane[2];
-		
+
 		// Computing the index of the voxel at that position
 		voxel_index = microenvironment.nearest_voxel_index( position_membrane );
 	}
@@ -644,7 +636,7 @@ void cell_ecm_adhesion_direction( Cell* pCell, Phenotype& phenotype, double dt )
 	std::vector<double> d_pref;
 
 	// Preferred direction given by random vector with no chemotaxis
-	double chemotaxis_bias = pCell->phenotype.motility.migration_bias;
+	double chemotaxis_bias = pCell->custom_data["chemotaxis_bias"];
 
 	if(chemotaxis_bias == 0)
 	{
@@ -716,11 +708,12 @@ void cell_ecm_repulsion(Cell* pCell , Phenotype& phenotype , double dt)
 
 	// Get total cell's velocity (sum of cell-cell adhesion and repulsion and cell-ECM adhesion)
 	std::vector<double> velocity = pCell->velocity;
+	normalize(&velocity);
 
 	double cell_radius = pCell->phenotype.geometry.radius;
 
 	// Pick voxel closest to cell's front
-	std::vector<double> scaled_direction = cell_radius * normalize(velocity);
+	std::vector<double> scaled_direction = cell_radius * velocity;
 	
 	// Calculating the position of the membrane in the direction of the cell
 	std::vector<double> position_membrane = pCell->position + scaled_direction;
@@ -740,7 +733,7 @@ void cell_ecm_repulsion(Cell* pCell , Phenotype& phenotype , double dt)
 	if (ecm_density > 0.000001)
 	{
 		// Compute strength of repulsion
-		temp_ecm_rep = ecm_density;
+		double temp_ecm_rep = ecm_density;
 		temp_ecm_rep *= norm(velocity);
 
 		if(temp_ecm_rep == 0)
@@ -749,7 +742,9 @@ void cell_ecm_repulsion(Cell* pCell , Phenotype& phenotype , double dt)
 		}
 
 		// Assign resulting velocity to cell's velocity
-		pCell->velocity -= temp_ecm_rep * normalize(velocity);	
+		normalize(&velocity);
+
+		pCell->velocity -= temp_ecm_rep * velocity;	
 	}
 
 	return;
@@ -764,7 +759,7 @@ void ecm_remodelling(Cell* pCell , Phenotype& phenotype , double dt)
 	double r_density = pCell->custom_data["ecm_density_rate"]; 
 	
 	// Ribose concentration 
-	double ribose_concentration = parameters.doubles("ribose_concentration");
+	double ribose_concentration = parameters.doubles("ribose_concentration");	
 
 	double beta = parameters.doubles("beta");
 	r_density *= pow(beta,-ribose_concentration/100);
@@ -777,14 +772,14 @@ void ecm_remodelling(Cell* pCell , Phenotype& phenotype , double dt)
 
 	//Pick voxel closest to cell's membrane in direction of movement
 	std::vector<double> direction = {pCell->custom_data["total_velocity_x"], pCell->custom_data["total_velocity_y"], pCell->custom_data["total_velocity_z"]};
-	std::vector<double> scaled_direction = pCell->phenotype.geometry.radius * normalize(direction);
+
+	std::vector<double> scaled_direction;
+	normalize(&direction);
+	scaled_direction = pCell->phenotype.geometry.radius * direction;
 
 	// Calculating the position of the membrane in the direction of the cell
 	std::vector<double> position_membrane = pCell->position + scaled_direction;
-	pCell->custom_data["point_on_membrane_x"] = position_membrane[0];
-	pCell->custom_data["point_on_membrane_y"] = position_membrane[1];
-	pCell->custom_data["point_on_membrane_z"] = position_membrane[2];
-
+	
 	if(parameters.strings("nearest_voxel_remodeling") == "front")
 	{
 		// Computing the index of the voxel at cell front
@@ -821,7 +816,7 @@ void ecm_remodelling(Cell* pCell , Phenotype& phenotype , double dt)
 		norm_cell_motility = phenotype.motility.motility_vector;
 		// std::cout<<"Motility vector: "<< norm_cell_motility<<std::endl;
 		normalize(&norm_cell_motility);
-		
+
 		ddotf = dot_product_ext(fiber_orientation, norm_cell_motility);
 
 		// flips the orientation vector so that it is aligned correctly with the moving cell for proper reoirentation later.
@@ -873,7 +868,7 @@ void proliferation_inhibition( Cell* pCell, Phenotype& phenotype, double dt )
 
 	// Get threshold neighbours parameter
 	int overcrowding_threshold = pCell->custom_data["overcrowding_threshold"];
-	//std::cout<<"overcrowding_threshold = "<<overcrowding_threshold<<std::endl;
+	// std::cout<<"overcrowding_threshold = "<<overcrowding_threshold<<std::endl;
 
 	// Get cell's neighbours 
 	int n_attached =  pCell->state.neighbors.size();
@@ -905,6 +900,7 @@ void custom_update_cell_velocity( Cell* pCell, Phenotype& phenotype, double dt)
 	// Assign speed to motility vector with same motility direction
 	pCell->phenotype.motility.motility_vector = pCell->phenotype.motility.migration_bias_direction; 
 	normalize( &(pCell->phenotype.motility.motility_vector) ); 
+
 	pCell->phenotype.motility.motility_vector *= pCell->phenotype.motility.migration_speed;
 
 	// Calling the standard update velocity of PhysiCell (updates cell-ECM adhesion direction and cell-cell adhesion and repulsion)
@@ -918,6 +914,8 @@ void custom_update_cell_velocity( Cell* pCell, Phenotype& phenotype, double dt)
 	double total_speed = sqrt(pow(pCell->velocity[0],2) + pow(pCell->velocity[1],2) + pow(pCell->velocity[2],2));
 	// std::cout<<"total_speed: "<<total_speed<<std::endl;
 	pCell->custom_data["total_speed"] = total_speed;
+	// std::cout<<"total_speed: "<<total_speed<<std::endl;
+
 	pCell->custom_data["total_velocity_x"] = pCell->velocity[0];
 	pCell->custom_data["total_velocity_y"] = pCell->velocity[1];
 	pCell->custom_data["total_velocity_z"] = pCell->velocity[2];
