@@ -644,7 +644,9 @@ void cell_ecm_adhesion_direction( Cell* pCell, Phenotype& phenotype, double dt )
 	std::vector<double> d_pref;
 
 	// Preferred direction given by random vector with no chemotaxis
-	if(ecm_chemotaxis_bias == 0)
+	double chemotaxis_bias = pCell->phenotype.motility.migration_bias;
+
+	if(chemotaxis_bias == 0)
 	{
 		d_pref = d_random;
 	}
@@ -652,17 +654,13 @@ void cell_ecm_adhesion_direction( Cell* pCell, Phenotype& phenotype, double dt )
 	// Preferred direction with chemotaxis
 	else
 	{
-		// Get ECM chemotaxis bias and cell sensitivity for ECM 
-		double ecm_chemotaxis_bias = pCell->custom_data["ecm_chemotaxis_bias"];
-		double ecm_sensitivity = pCell->custom_data["ecm_sensitivity"];
-
 		// Get vector for chemotaxis 
 		static int substrate_index = microenvironment.find_density_index( "substrate" ); 
 		std::vector<double> chemotaxis_grad = pCell->nearest_gradient(substrate_index);
 		normalize( &chemotaxis_grad ); 
 
 		// combine cell chosen random direction and chemotaxis direction (like standard update_motility function)
-		d_pref = (1 - ecm_chemotaxis_bias) * d_random + ecm_chemotaxis_bias * chemotaxis_grad;
+		d_pref = (1 - chemotaxis_bias) * d_random + chemotaxis_bias * chemotaxis_grad;
 	}
 
 	normalize( &d_pref ); 
@@ -679,6 +677,9 @@ void cell_ecm_adhesion_direction( Cell* pCell, Phenotype& phenotype, double dt )
 	/************************* cell-ECM adhesion direction with fibres ************************/
 	else if(parameters.strings("ecm_definition") == "ecm_fibers")
 	{
+		// Get cell sensitivity for ECM 
+		double ecm_sensitivity = pCell->custom_data["ecm_sensitivity"];
+
 		double anisotropy = ecm.ecm_voxels[voxel_index].anisotropy; 
 		std::vector<double> fiber_orientation = ecm.ecm_voxels[voxel_index].ecm_fiber_alignment;
 
