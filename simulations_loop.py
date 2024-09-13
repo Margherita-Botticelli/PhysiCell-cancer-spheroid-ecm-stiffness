@@ -26,28 +26,28 @@ if repeat_simulations:
 else:
     #### Define parameter values for the simulations
     seeds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] # [0] # 
-    riboses = [0, 50, 200] # [0] # 
-    proliferation_vals = [0.0002, 0.0003, 0.0004] # [0.00037] # [0.00032] # 
-    mot_speed_vals = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1] # [0.6] # [0.1] # 
+    riboses = [0] # [0, 50, 200] # 
+    proliferation_vals = [0.0002, 0.0003, 0.0004] # [0.00032] # [0.00037] # 
+    mot_speed_vals = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6] # [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1] # [0.1] # [0.6] # [0.6] # 
     repulsion_vals = [10]
     adhesion_vals = [0.4]
-    r_density_vals = [0.0001, 0.0002, 0.0004, 0.0008, 0.0016, 0.0032, 0.0064, 0.0128] # [0.0002] 
-    alpha_vals = [1, 2, 4, 8, 16, 32, 64]
-    beta_vals = [1, 2, 4, 8, 16, 32, 64]
+    r_density_vals = [0.0001, 0.0002, 0.0004, 0.0008, 0.0016, 0.0032, 0.0064, 0.0128] # [0.001] # [0.01] # 
+    sigma_vals = [0] # [0, 0.001]
+    delta_vals = [0] # [0, 0.001]
 
     #### Combine parameters
-    alphas = np.repeat(alpha_vals, len(beta_vals))
-    betas = beta_vals * len(alpha_vals)
-    proliferations = np.repeat(proliferation_vals * len(alphas), len(mot_speed_vals) * len(adhesion_vals) * len(r_density_vals))
-    mot_speeds = np.repeat(mot_speed_vals * len(proliferation_vals)  * len(alphas) ,  len(adhesion_vals)  * len(r_density_vals)) 
-    repulsions = repulsion_vals * len(proliferation_vals) * len(mot_speed_vals) * len(r_density_vals) * len(alphas)
-    adhesions = adhesion_vals * len(proliferation_vals) * len(mot_speed_vals) * len(r_density_vals)  * len(alphas) 
-    r_densities = np.repeat(r_density_vals * len(proliferation_vals) * len(mot_speed_vals) * len(alphas), len(adhesion_vals) ) 
-    alphas = np.repeat(alphas,len(proliferations)* len(beta_vals))
-    betas = np.repeat(betas * len(alpha_vals),len(proliferations))
+    sigmas = np.repeat(sigma_vals, len(delta_vals))
+    deltas = delta_vals * len(sigma_vals)
+    proliferations = np.repeat(proliferation_vals * len(sigmas), len(mot_speed_vals) * len(adhesion_vals) * len(r_density_vals))
+    mot_speeds = np.repeat(mot_speed_vals * len(proliferation_vals)  * len(sigmas) ,  len(adhesion_vals)  * len(r_density_vals)) 
+    repulsions = repulsion_vals * len(proliferation_vals) * len(mot_speed_vals) * len(r_density_vals) * len(sigmas)
+    adhesions = adhesion_vals * len(proliferation_vals) * len(mot_speed_vals) * len(r_density_vals)  * len(sigmas) 
+    r_densities = np.repeat(r_density_vals * len(proliferation_vals) * len(mot_speed_vals) * len(sigmas), len(adhesion_vals) ) 
+    sigmas = np.repeat(sigmas,len(proliferations)* len(delta_vals))
+    deltas = np.repeat(deltas * len(sigma_vals),len(proliferations))
     
     #### Check if the parameters all have same length
-    length_list_parameters = [len(proliferations),len(repulsions),len(adhesions),len(mot_speeds),len(r_densities), len(alphas), len(betas)] #,len(r_orientations),len(r_anisotropies)]
+    length_list_parameters = [len(proliferations),len(repulsions),len(adhesions),len(mot_speeds),len(r_densities), len(sigmas), len(deltas)] #,len(r_orientations),len(r_anisotropies)]
     print(f'Parameter arrays lengths {length_list_parameters}', flush=True)
 
     length_list_parameters = [i for i in length_list_parameters if i != 0]
@@ -58,8 +58,8 @@ else:
     print(f'Rep: {repulsions}\n')
     print(f'Adh: {adhesions}\n')
     print(f'Degradation: {r_densities}\n')
-    print(f'Alpha  : {alphas}\n')
-    print(f'Beta: {betas}\n')
+    print(f'sigma  : {sigmas}\n')
+    print(f'delta: {deltas}\n')
 
     #### If not exit
     if len(length_list_parameters)>1:
@@ -76,7 +76,7 @@ else:
         sys.exit()
 
     #### Simulations ID number: write number manually or write negative number to find last simulation number in the data folder 
-    simulation_id = 292
+    simulation_id = 0
 
     #### If the simulation_id number is negative find the last simulation number in the data folder
     if simulation_id < 0:
@@ -111,8 +111,8 @@ for sim in simulations:
         adhesion = adhesions[i]
         repulsion = repulsions[i]
         r_density = r_densities[i]
-        alpha_text = alphas[i]
-        beta_text = betas[i]
+        sigma_text = sigmas[i]
+        delta_text = deltas[i]
 
     for rib in riboses: 
         for seed in seeds:
@@ -150,56 +150,56 @@ for sim in simulations:
             user_parameters = root.find('user_parameters')
             save = root.find('save')
             cell_definitions = root.find('cell_definitions')
-            virtual_wall_at_domain_edge = options.find('virtual_wall_at_domain_edge')
-            random_seed = user_parameters.find('random_seed')
-            ribose_concentration = user_parameters.find('ribose_concentration')
-            ecm_orientation_setup = user_parameters.find('ecm_orientation_setup')
-            initial_anisotropy = user_parameters.find('initial_anisotropy')
-            tumor_radius = user_parameters.find('tumor_radius')
-            folder = save.find('folder')   
-            cell_definition = cell_definitions.find('cell_definition')
-            phenotype = cell_definition.find('phenotype')
-            custom_data = cell_definition.find('custom_data')
-            mechanics = phenotype.find('mechanics')
-            cycle = phenotype.find('cycle')
-            volume = phenotype.find('volume')
-            motility = phenotype.find('motility')
-            total = volume.find('total')
-            cell_cell_adhesion_strength = mechanics.find('cell_cell_adhesion_strength')
-            cell_cell_repulsion_strength = mechanics.find('cell_cell_repulsion_strength')
-            phase_transition_rates = cycle.find('phase_transition_rates')
-            prolif_rate = phase_transition_rates.find('rate')
-            mot_speed = motility.find('speed')
-            fiber_realignment_rate = custom_data.find('fiber_realignment_rate')
-            ecm_density_rate = custom_data.find('ecm_density_rate')
-            anisotropy_increase_rate = custom_data.find('anisotropy_increase_rate')
-            ecm_sensitivity = custom_data.find('ecm_sensitivity')
-            alpha = user_parameters.find('alpha')
-            beta = user_parameters.find('beta')
+            virtual_wall_at_domain_edge = options.find('virtual_wall_at_domain_edge') # type: ignore
+            random_seed = user_parameters.find('random_seed') # type: ignore
+            ribose_concentration = user_parameters.find('ribose_concentration') # type: ignore
+            ecm_orientation_setup = user_parameters.find('ecm_orientation_setup') # type: ignore
+            initial_anisotropy = user_parameters.find('initial_anisotropy') # type: ignore
+            tumor_radius = user_parameters.find('tumor_radius') # type: ignore
+            folder = save.find('folder')    # type: ignore
+            cell_definition = cell_definitions.find('cell_definition') # type: ignore
+            phenotype = cell_definition.find('phenotype') # type: ignore
+            custom_data = cell_definition.find('custom_data') # type: ignore
+            mechanics = phenotype.find('mechanics') # type: ignore
+            cycle = phenotype.find('cycle') # type: ignore
+            volume = phenotype.find('volume') # type: ignore
+            motility = phenotype.find('motility') # type: ignore
+            total = volume.find('total') # type: ignore
+            cell_cell_adhesion_strength = mechanics.find('cell_cell_adhesion_strength') # type: ignore
+            cell_cell_repulsion_strength = mechanics.find('cell_cell_repulsion_strength') # type: ignore
+            phase_transition_rates = cycle.find('phase_transition_rates') # type: ignore
+            prolif_rate = phase_transition_rates.find('rate') # type: ignore
+            mot_speed = motility.find('speed') # type: ignore
+            fiber_realignment_rate = custom_data.find('fiber_realignment_rate') # type: ignore
+            ecm_density_rate = custom_data.find('ecm_density_rate') # type: ignore
+            anisotropy_increase_rate = custom_data.find('anisotropy_increase_rate') # type: ignore
+            ecm_sensitivity = custom_data.find('ecm_sensitivity') # type: ignore
+            sigma = user_parameters.find('sigma') # type: ignore
+            delta = user_parameters.find('delta') # type: ignore
         
             if(repeat_simulations):
-                virtual_wall_at_domain_edge.text = 'true'
-                random_seed.text = str(seed) 
-                ribose_concentration.text = str(rib)
-                folder.text = f'data/{proj}/output_rib{rib}_{sim}_{seed}/'
+                virtual_wall_at_domain_edge.text = 'true' # type: ignore
+                random_seed.text = str(seed)  # type: ignore
+                ribose_concentration.text = str(rib) # type: ignore
+                folder.text = f'data/{proj}/output_rib{rib}_{sim}_{seed}/' # type: ignore
 
             else:
-                random_seed.text = str(seed) 
-                folder.text = f'data/{proj}/output_rib{rib}_{sim}_{seed}/'
-                ribose_concentration.text = str(rib)
-                cell_cell_adhesion_strength.text = str(adhesion)
-                cell_cell_repulsion_strength.text = str(repulsion)
-                prolif_rate.text = str(proliferation)
-                mot_speed.text = str(motility_speed)
-                fiber_realignment_rate.text = '0'
-                ecm_density_rate.text = str(r_density)
-                anisotropy_increase_rate.text = '0'
+                random_seed.text = str(seed)  # type: ignore
+                folder.text = f'data/{proj}/output_rib{rib}_{sim}_{seed}/' # type: ignore
+                ribose_concentration.text = str(rib) # type: ignore
+                cell_cell_adhesion_strength.text = str(adhesion) # type: ignore
+                cell_cell_repulsion_strength.text = str(repulsion) # type: ignore
+                prolif_rate.text = str(proliferation) # type: ignore
+                mot_speed.text = str(motility_speed) # type: ignore
+                fiber_realignment_rate.text = '0' # type: ignore
+                ecm_density_rate.text = str(r_density) # type: ignore
+                anisotropy_increase_rate.text = '0' # type: ignore
                 # ecm_sensitivity.text = '0'
-                alpha.text = str(alpha_text)
-                beta.text = str(beta_text)
-                initial_anisotropy.text = '0'
-                tumor_radius.text = '100'
-                ecm_orientation_setup.text =  'random' # 'horizontal' # 'starburst' # 'random' # 'circular' # 
+                sigma.text = str(sigma_text) # type: ignore
+                delta.text = str(delta_text) # type: ignore
+                initial_anisotropy.text = '0' # type: ignore
+                tumor_radius.text = '100' # type: ignore
+                ecm_orientation_setup.text =  'random' # 'horizontal' # 'starburst' # 'random' # 'circular' #  # type: ignore
             
             #### Write the xml file for the current simulation
             tree.write('./config/PhysiCell_settings.xml')    
