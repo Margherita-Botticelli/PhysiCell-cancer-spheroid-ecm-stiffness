@@ -67,6 +67,7 @@
 
 #include "./custom.h"
 #include "./extracellular_matrix.h"
+#include <cmath>
 
 using namespace BioFVM; 
 using namespace PhysiCell;
@@ -568,9 +569,9 @@ void cell_ecm_adhesion_speed( Cell* pCell, Phenotype& phenotype, double dt )
 	// Get value of max migration speed at ribose 0 (S_0)
 	double max_migration_speed = get_single_base_behavior(pCell,"migration speed");
 
-	// Max migration speed function wrt ribose concentration (equivalent to S_rib=e^{-sigma*rib}, with sigma=ln(a)/100)
-	double alpha = parameters.doubles("alpha");
-	max_migration_speed *= pow(alpha,-ribose_concentration/100);
+	// Max migration speed (S_rib) function wrt ribose concentration 
+	double sigma = parameters.doubles("sigma");
+	max_migration_speed *= exp(-sigma * ribose_concentration);
 
 	// Compute cell cell-ECM adhesion speed, stored in migration speed 
 	pCell->phenotype.motility.migration_speed *= 4 * max_migration_speed * ecm_density;
@@ -706,24 +707,20 @@ void cell_ecm_repulsion(Cell* pCell , Phenotype& phenotype , double dt)
 {
 	// Function that computes the cell-ECM repulsion velocity
 
-	// Get total cell's velocity (sum of cell-cell adhesion and repulsion and cell-ECM adhesion)
-	std::vector<double> velocity = pCell->velocity;
-	normalize(&velocity);
+	// Get cell's direction of movement
+	std::vector<double> direction = pCell->velocity;
+	normalize(&direction);
 
 	double cell_radius = pCell->phenotype.geometry.radius;
 
 	// Pick voxel closest to cell's front
-	std::vector<double> scaled_direction = cell_radius * velocity;
+	std::vector<double> scaled_direction = cell_radius * direction;
 	
 	// Calculating the position of the membrane in the direction of the cell
 	std::vector<double> position_membrane = pCell->position + scaled_direction;
 
 	// Computing the index of the voxel at that position
 	int voxel_index_memb = microenvironment.nearest_voxel_index( position_membrane );
-
-	// Nearest voxel to cell position
-	std::vector<double> position = pCell->position;
-	int voxel_index_pos = microenvironment.nearest_voxel_index( position );
 
 	double ecm_density = ecm.ecm_voxels[voxel_index_memb].density;
 	ecm_density = std::min( ecm_density, 1.0 ); 
@@ -732,6 +729,9 @@ void cell_ecm_repulsion(Cell* pCell , Phenotype& phenotype , double dt)
 	// If ECM density is positive compute repulsion
 	if (ecm_density > 0.000001)
 	{
+		// Get total cell's velocity (sum of cell-cell adhesion and repulsion and cell-ECM adhesion)
+		std::vector<double> velocity = pCell->velocity;
+
 		// Compute strength of repulsion
 		double temp_ecm_rep = ecm_density;
 		temp_ecm_rep *= norm(velocity);
@@ -743,7 +743,6 @@ void cell_ecm_repulsion(Cell* pCell , Phenotype& phenotype , double dt)
 
 		// Assign resulting velocity to cell's velocity
 		normalize(&velocity);
-
 		pCell->velocity -= temp_ecm_rep * velocity;	
 	}
 
@@ -761,8 +760,9 @@ void ecm_remodelling(Cell* pCell , Phenotype& phenotype , double dt)
 	// Ribose concentration 
 	double ribose_concentration = parameters.doubles("ribose_concentration");	
 
-	double beta = parameters.doubles("beta");
-	r_density *= pow(beta,-ribose_concentration/100);
+	// Degradation rate (r_deg,rib) function wrt ribose concentration 
+	double delta = parameters.doubles("delta");
+	r_density *= exp(-delta * ribose_concentration);
 
 	// Set density target 
 	double density_target = 0;
@@ -876,7 +876,7 @@ void proliferation_inhibition( Cell* pCell, Phenotype& phenotype, double dt )
 	// Proliferation depends on number of cells in contact
 	double proliferation_rate = get_single_base_behavior(pCell,"cycle entry");
 
-	if (n_attached >= overcrowding_threshold)
+	if (n_attached > overcrowding_threshold)
 	{
 		proliferation_rate = 0;
 	}
