@@ -146,7 +146,7 @@
                 <motility>
                     <speed units="micron/min">0.5</speed>
                     <persistence_time units="min">10</persistence_time>
-                    <migration_bias units="dimensionless">0.0</migration_bias>
+                    <migration_bias units="dimensionless">1.0</migration_bias>
                     <options>
                         <enabled>true</enabled>
                         <use_2D>true</use_2D>
@@ -195,6 +195,7 @@
                 <ecm_density_rate conserved="false" units="dimensionless" description="Cell characteristic rate of deposition/degradation of ECM">0.01</ecm_density_rate>
                 <anisotropy_increase_rate conserved="false" units="1/min" description="Anisotropy rate of increase">0.001</anisotropy_increase_rate>
                 <fiber_realignment_rate conserved="false" units="1/min" description="Fiber rate of realignment">0.01</fiber_realignment_rate>
+                <chemotaxis_bias description="Chemotaxis bias" type="double" units="dimensionless">0.0</chemotaxis_bias>
                 <ecm_sensitivity description="Cell sensitivity to ECM orientation" type="double" units="dimensionless">1.0</ecm_sensitivity>
                 <overcrowding_threshold description="Number of neighbouring cells threshold for cell proliferation" type="int">6</overcrowding_threshold>
                 <total_speed description="Total cell's speed, given by motility and mechanics" type="double">0</total_speed>
@@ -234,7 +235,7 @@
         <nearest_voxel_direction type="string" units="dimensionless" description="nearest voxel for motility direction at cell position (position) or cell front (front)">front</nearest_voxel_direction>
         <nearest_voxel_speed type="string" units="dimensionless" description="nearest voxel for motility speed at cell position (position) or cell front (front)">front</nearest_voxel_speed>
         <ecm_definition type="string" units="dimensionless" description="ECM definition: desnity only with no fiber orientation (ecm_density, with fiber orientation and anisotropy (ecm_fibers)">ecm_density</ecm_definition>
-        <alpha type="double" units="" description="">0</alpha>
-        <beta type="double" units="" description="">0</beta>
+        <sigma type="double" units="" description="strength of ribose effect on max migration speed">0</sigma>
+        <delta type="double" units="" description="strength of ribose effect on degradation rate">0</delta>
     </user_parameters>
 </PhysiCell_settings>
