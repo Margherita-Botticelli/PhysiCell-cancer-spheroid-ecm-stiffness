@@ -3,18 +3,20 @@ import seaborn
 import pandas as pd
 import numpy as np
 import matplotlib as mpl
+import scipy.ndimage
 
 def plots_speed_vs_degr_delaunay(data, simulation_name, save_folder, title=True):
     """
-    Plot the relationship between max migration speed and degradation rate for the Delaunay distance.
+    Plot the relationship between max migration speed and degradation rate for the Delaunay distance
 
     Parameters:
     - data: pandas DataFrame containing the simulation data.
     - simulation_name: String identifier for the simulation.
     - save_folder: Directory path to save the plot.
-    - title: Boolean to decide whether to include a title on the plot.
+    - title: Boolean to decide whether to include a title on the plot
     """
-    plt.figure()
+    # plt.figure()
+    fig, ax = plt.subplots()
 
     #### Collect simulation parameters from the DataFrame
     ribose = data['ribose'].iloc[0]
@@ -72,8 +74,14 @@ def plots_speed_vs_degr_delaunay(data, simulation_name, save_folder, title=True)
     cmap = mpl.colors.LinearSegmentedColormap.from_list("", ['white', color_rib, color_rib_dark])
 
     #### Plot heatmap
-    ax = seaborn.heatmap(df, cmap=cmap, vmin=15, vmax=35, cbar_kws={'label': r'Delaunay mean distance [$\mu$m]'})
-    ax.figure.axes[-1].yaxis.set_label_position('left')
+    hmap = seaborn.heatmap(df, cmap=cmap, vmin=15, vmax=30, cbar_kws={'label': r'Delaunay mean distance [$\mu$m]'},ax=ax)
+    # ax = seaborn.heatmap(df, cmap=cmap, vmin=15, vmax=30, annot=annot_arr, fmt="s", cbar_kws={'label': r'Delaunay mean distance [$\mu$m]'})
+    hmap.figure.axes[-1].yaxis.set_label_position('left')
+
+    df = scipy.ndimage.gaussian_filter(df, 1)
+
+    ax.contour(np.arange(.5, df.shape[1]), np.arange(.5, df.shape[0]), df, colors='white',alpha=0.5)
+
 
     #### Set axis labels and title
     plt.ylabel(r'$r_{deg,0}$ [min$^{-1}$]')
@@ -89,15 +97,16 @@ def plots_speed_vs_degr_delaunay(data, simulation_name, save_folder, title=True)
 
 def plots_speed_vs_degr_spheroid_area_growth(data, simulation_name, save_folder, title=True):
     """
-    Plot the relationship between max migration speed and degradation rate for spheroid area growth.
+    Plot the relationship between max migration speed and degradation rate for spheroid area growth
 
     Parameters:
     - data: pandas DataFrame containing the simulation data.
     - simulation_name: String identifier for the simulation.
     - save_folder: Directory path to save the plot.
-    - title: Boolean to decide whether to include a title on the plot.
+    - title: Boolean to decide whether to include a title on the plot
     """
-    plt.figure()
+    # plt.figure()
+    fig, ax = plt.subplots()
 
     #### Collect simulation parameters from the DataFrame
     ribose = data['ribose'].iloc[0]
@@ -157,8 +166,14 @@ def plots_speed_vs_degr_spheroid_area_growth(data, simulation_name, save_folder,
     cmap = mpl.colors.LinearSegmentedColormap.from_list("", ['white', color_rib, color_rib_dark])
 
     #### Plot heatmap
-    ax = seaborn.heatmap(df, cmap=cmap, vmin=0, vmax=8, cbar_kws={'label': 'Growth relative to t$_0$'})
-    ax.figure.axes[-1].yaxis.set_label_position('left')
+    hmap = seaborn.heatmap(df, cmap=cmap, vmin=1, vmax=8, cbar_kws={'label': 'Growth relative to t$_0$'},ax=ax)
+    # ax = seaborn.heatmap(df, cmap=cmap, vmin=1, vmax=8, annot=annot_arr, fmt="s", cbar_kws={'label': 'Growth relative to t$_0$'})
+    hmap.figure.axes[-1].yaxis.set_label_position('left')
+
+    df = scipy.ndimage.gaussian_filter(df, 1)
+
+    ax.contour(np.arange(.5, df.shape[1]), np.arange(.5, df.shape[0]), df, colors='white', alpha=0.5)
+
 
     #### Set axis labels and title
     plt.ylabel(r'$r_{deg,0}$ [min$^{-1}$]')
@@ -174,15 +189,16 @@ def plots_speed_vs_degr_spheroid_area_growth(data, simulation_name, save_folder,
 
 def plots_sigma_vs_delta_spheroid_area_growth(data, simulation_name, save_folder, title=True):
     """
-    Plot the relationship between sigma and delta parameters for spheroid area growth.
+    Plot the relationship between sigma and delta parameters for spheroid area growth
 
     Parameters:
     - data: pandas DataFrame containing the simulation data.
     - simulation_name: String identifier for the simulation.
     - save_folder: Directory path to save the plot.
-    - title: Boolean to decide whether to include a title on the plot.
+    - title: Boolean to decide whether to include a title on the plot
     """
-    plt.figure()
+    
+    fig, ax = plt.subplots()
 
     #### Collect simulation parameters from the DataFrame
     ribose = data['ribose'].iloc[0]
@@ -242,12 +258,20 @@ def plots_sigma_vs_delta_spheroid_area_growth(data, simulation_name, save_folder
     cmap = mpl.colors.LinearSegmentedColormap.from_list("", ['white', color_rib, color_rib_dark])
 
     #### Plot heatmap
-    ax = seaborn.heatmap(df, cmap=cmap, vmin=0, vmax=8, cbar_kws={'label': 'Growth relative to t$_0$'})
-    ax.figure.axes[-1].yaxis.set_label_position('left')
+    # ax = seaborn.heatmap(df, cmap=cmap, vmin=1, vmax=8, annot=annot_arr, fmt="s", cbar_kws={'label': 'Growth relative to t$_0$'})
+    hmap = seaborn.heatmap(df, cmap=cmap, vmin=1, vmax=8, cbar_kws={'label': 'Growth relative to t$_0$'}, ax=ax)
+    hmap.figure.axes[-1].yaxis.set_label_position('left')
+
+    df = scipy.ndimage.gaussian_filter(df, 0.7)
+
+    ax.contour(np.arange(.5, df.shape[1]), np.arange(.5, df.shape[0]), df, colors='white')
 
     #### Set axis labels and title
     plt.ylabel(r"$\delta$ [mM$^{-1}$]")
     plt.xlabel(r"$\sigma$ [mM$^{-1}$]")
+    plt.yticks(rotation=45,va='top')
+    plt.xticks(rotation=45,ha='right')
+
     if title:
         plt.title(r'$\bf{Spheroid\,growth\,relative\,to\,t_0}$' +
                   f'\nAdhesion={cell_adh}, repulsion={cell_rep}, prolif={prolif}' + 
