@@ -5,12 +5,12 @@ import seaborn
 
 def plots_spheroid_area_growth_over_time(data, save_folder, title=True):
     """
-    Plots the spheroid area growth over time, relative to the initial spheroid area.
+    Plots the spheroid area growth over time, relative to the initial spheroid area
     
     Parameters:
     data (DataFrame): The input data containing simulation results.
     save_folder (str): Directory path where the plot will be saved.
-    title (bool): Whether to include a title in the plot.
+    title (bool): Whether to include a title in the plot
     """
     #### Filter data for cell ID == 0 
     data = data[(data['ID'] == 0)]
@@ -42,26 +42,40 @@ def plots_spheroid_area_growth_over_time(data, save_folder, title=True):
 
     #### Create plot
     plt.figure(figsize=(5, 3), num=simulation)
+    seaborn.set_context("talk")
+    seaborn.set_style('ticks')
+    seaborn.despine()
+
 
     #### Calculate mean and standard deviation of spheroid area ratio
     spheroid_area_mean = np.mean(spheroid_area_ratio, axis=0)
-    spheroid_area_std = np.std(spheroid_area_ratio, axis=0)
+    # spheroid_area_std = np.std(spheroid_area_ratio, axis=0)
+    spheroid_area_25_percentile = np.percentile(spheroid_area_ratio, 25 , axis=0) 
+    spheroid_area_75_percentile = np.percentile(spheroid_area_ratio, 75 , axis=0)
+
+    print(f'{simulation=}',flush=True)
+    print(f'{ribose=}',flush=True)
+    print(f'{spheroid_area_mean=}',flush=True)
+    print(f'{spheroid_area_25_percentile=}',flush=True)
+    print(f'{spheroid_area_75_percentile=}',flush=True)
+
 
     #### Plot mean and shaded area for standard deviation
     plt.plot(t, spheroid_area_mean, label=f'{ribose} mM', color=color_rib)
-    plt.fill_between(t, spheroid_area_mean + spheroid_area_std, spheroid_area_mean - spheroid_area_std, facecolor=color_rib, alpha=0.4)
+    # plt.fill_between(t, spheroid_area_mean + spheroid_area_std, spheroid_area_mean - spheroid_area_std, facecolor=color_rib, alpha=0.4)
+    plt.fill_between(t, spheroid_area_75_percentile, spheroid_area_25_percentile, facecolor=color_rib, alpha=0.4)
 
     #### Set axis labels and ticks
-    plt.ylabel(f'Growth relative to t$_0$', fontsize=18)
-    plt.xlabel("Time [h]", fontsize=18)
-    plt.yticks(np.arange(0, 8.1, 1), fontsize=15)
-    plt.xticks(np.arange(0, t[-1] + 1, t[-1] / 4), fontsize=15)
+    plt.ylabel(f'Growth relative to t$_0$')
+    plt.xlabel("Time [h]")
+    plt.yticks(np.arange(0, 8.1, 1))
+    plt.xticks(np.arange(0, t[-1] + 1, t[-1] / 4))
 
     #### Set plot title
     if title:
         plt.title(r'$\bf{Spheroid\,growth\,relative\,to\,t_0}$' + f'\n{prolif=}, {max_mot_speed=}\n{cell_adh=}, {cell_rep=}, {r_density=}', fontsize=12)
     
-    plt.legend(title=f'Ribose', fontsize=15, title_fontsize=15)
+    plt.legend(fontsize='x-small')
 
     #### Save the plot
     plt.savefig(save_folder + f'plots/spheroid_area_growth_over_time_{simulation}.png', bbox_inches="tight")
@@ -69,12 +83,12 @@ def plots_spheroid_area_growth_over_time(data, save_folder, title=True):
 
 def plots_delaunay_mean_distance_over_time(data, save_folder, title=True):
     """
-    Plots the mean Delaunay distance over time.
+    Plots the mean Delaunay distance over time
     
     Parameters:
     data (DataFrame): The input data containing simulation results.
     save_folder (str): Directory path where the plot will be saved.
-    title (bool): Whether to include a title in the plot.
+    title (bool): Whether to include a title in the plot
     """
     #### Filter data for cell ID == 0
     data = data[(data['ID'] == 0)]
@@ -103,26 +117,41 @@ def plots_delaunay_mean_distance_over_time(data, save_folder, title=True):
 
     #### Create plot
     plt.figure(figsize=(5, 4), num=simulation + 1)
+    seaborn.set_context("talk")
+    seaborn.set_style('ticks')
+    seaborn.despine()
+
 
     #### Calculate mean and standard deviation of Delaunay distance
     delaunay_distance_mean = np.mean(delaunay_distance, axis=0)
-    delaunay_distance_std = np.std(delaunay_distance, axis=0)
+    # delaunay_distance_std = np.std(delaunay_distance, axis=0)
+    delaunay_distance_25_percentile = np.percentile(delaunay_distance, 25 , axis=0) 
+    delaunay_distance_75_percentile = np.percentile(delaunay_distance, 75 , axis=0)
+
+
+    print(f'{simulation=}',flush=True)
+    print(f'{ribose=}',flush=True)
+    print(f'{delaunay_distance_mean=}',flush=True)
+    print(f'{delaunay_distance_25_percentile=}',flush=True)
+    print(f'{delaunay_distance_75_percentile=}',flush=True)
+
 
     #### Plot mean and shaded area for standard deviation
     plt.plot(t, delaunay_distance_mean, label=f'{ribose} mM', color=color_rib)
-    plt.fill_between(t, delaunay_distance_mean + delaunay_distance_std, delaunay_distance_mean - delaunay_distance_std, facecolor=color_rib, alpha=0.4)
+    # plt.fill_between(t, delaunay_distance_mean + delaunay_distance_std, delaunay_distance_mean - delaunay_distance_std, facecolor=color_rib, alpha=0.4)
+    plt.fill_between(t, delaunay_distance_75_percentile, delaunay_distance_25_percentile, facecolor=color_rib, alpha=0.4)
 
     #### Set axis labels and ticks
-    plt.ylabel(r'Delaunay mean distance [$\mu$m]', fontsize=18)
-    plt.xlabel("Time [h]", fontsize=18)
-    plt.yticks(np.arange(0, 25.1, 5), fontsize=15)
-    plt.xticks(np.arange(0, t[-1] + 1, t[-1] / 4), fontsize=15)
+    plt.ylabel(r'Delaunay mean distance [$\mu$m]', fontsize='small')
+    plt.xlabel("Time [h]")
+    plt.yticks(np.arange(0, 25.1, 5))
+    plt.xticks(np.arange(0, t[-1] + 1, t[-1] / 4))
 
     #### Set plot title
     if title:
         plt.title(r'$\bf{Delaunay\,mean\,distance}$' + f'\n{prolif=}, {max_mot_speed=}\n{cell_adh=}, {cell_rep=}, {r_density=}', fontsize=12)
         
-    plt.legend(title=f'Ribose', fontsize=15, title_fontsize=15)
+    plt.legend(fontsize='x-small')
 
     #### Save the plot
     plt.savefig(save_folder + f'plots/delaunay_mean_distance_over_time_{simulation}.png', bbox_inches="tight")
@@ -130,12 +159,12 @@ def plots_delaunay_mean_distance_over_time(data, save_folder, title=True):
 
 def plots_cell_count_over_time(data, save_folder, title=True):
     """
-    Plots the number of cells over time.
+    Plots the number of cells over time
     
     Parameters:
     data (DataFrame): The input data containing simulation results.
     save_folder (str): Directory path where the plot will be saved.
-    title (bool): Whether to include a title in the plot.
+    title (bool): Whether to include a title in the plot
     """
     #### Extract relevant parameters from the data
     simulation = data['simulation'].iloc[0]
@@ -169,27 +198,40 @@ def plots_cell_count_over_time(data, save_folder, title=True):
 
     #### Calculate mean and standard deviation of cell count
     cell_count_mean = np.mean(cell_count, axis=0)
-    cell_count_std = np.std(cell_count, axis=0)
+    # cell_count_std = np.std(cell_count, axis=0)
+    cell_count_25_percentile = np.percentile(cell_count, 25 , axis=0)
+    cell_count_75_percentile = np.percentile(cell_count, 75 , axis=0)
+
+    print(f'{simulation=}',flush=True)
+    print(f'{ribose=}',flush=True)
+    print(f'{cell_count_mean=}',flush=True)
+    print(f'{cell_count_25_percentile=}',flush=True)
+    print(f'{cell_count_75_percentile=}',flush=True)
 
     #### Create plot
-    plt.figure(figsize=(5, 4), num=simulation)
+    plt.figure(figsize=(5, 3), num=simulation + 2)
+
+    seaborn.set_context("talk")
+    seaborn.set_style('ticks')
+    seaborn.despine()
+
 
     #### Plot mean and shaded area for standard deviation
     plt.plot(t,cell_count_mean,label=f'{ribose} mM',color=color_rib)
-    plt.fill_between(t, cell_count_mean+cell_count_std, cell_count_mean-cell_count_std, facecolor=color_rib, alpha=0.4)
+    # plt.fill_between(t, cell_count_mean+cell_count_std, cell_count_mean-cell_count_std, facecolor=color_rib, alpha=0.4)
+    plt.fill_between(t, cell_count_75_percentile, cell_count_25_percentile, facecolor=color_rib, alpha=0.4)
     
     #### Set axis labels and ticks
-    plt.ylabel(f'Cell count',fontsize=18)
-    plt.xlabel("Time [h]",fontsize=18)
-    plt.yticks(np.arange(0,1200,200),fontsize=15)
-    plt.xticks(np.arange(0, t[-1]+1,t[-1]/4),fontsize=15)
+    plt.ylabel(f'Cell count')
+    plt.xlabel("Time [h]")
+    plt.yticks(np.arange(0,1200,200))
+    plt.xticks(np.arange(0, t[-1]+1,t[-1]/4))
 
     #### Set plot title
     if title == True:
         plt.title(r'$\bf{Cell\,number}$'+f'\n{prolif=}, {max_mot_speed=}\n{cell_adh=}, {cell_rep=}, {r_density=}', fontsize = 12)
         
-    plt.legend(title=f'Ribose',fontsize=15,title_fontsize=15)
+    plt.legend(fontsize='x-small')
     
     #### Save the plot
     plt.savefig(save_folder + f'plots/cell_count_over_time_{simulation}.png', bbox_inches = "tight")
-
