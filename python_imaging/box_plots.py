@@ -63,12 +63,16 @@ def box_plot_spheroid_area_growth(data, save_folder, title=True):
     df = pd.concat(df_list, copy=False, axis=0)
 
     #### Create plot
-    plt.figure(figsize=(4, 5), num=simulation)
+    fig = plt.figure(figsize=(4, 4), num=simulation)
+    plt.rcParams.update({'font.weight': 'bold',
+        'axes.labelweight': 'bold'})
 
     #### Set seaborn context and style
-    seaborn.set_context("talk")
+    seaborn.set_context("paper")
     seaborn.set_style('ticks')
+    # seaborn.despine(top=True,right=True)
     seaborn.despine()
+
 
     #### Melt DataFrame
     df = pd.melt(df, id_vars=['simulation', 'ribose'], var_name='t', value_name='spheroid_area_ratio', ignore_index=True)
@@ -77,44 +81,62 @@ def box_plot_spheroid_area_growth(data, save_folder, title=True):
     df = df[df['t'].isin(['72'])]
 
     #### Create a boxplot of the spheroid area growth ratios
-    box_plot = seaborn.boxplot(data=df, x='ribose', y='spheroid_area_ratio', hue='simulation', fliersize=0,legend=False, linewidth=4, gap=0.2)
+    meanlineprops = dict(linestyle='-',linewidth=4)
+    box_plot = seaborn.boxplot(data=df, x='ribose', y='spheroid_area_ratio', hue='simulation', fliersize=0,legend=False, linewidth=4, gap=0.2, showmeans=True, meanline=True, meanprops=meanlineprops)
 
     #### Define colors and hatches for the box plots
     color_rib_0 = seaborn.color_palette('colorblind')[0]
     color_rib_50 = seaborn.color_palette('colorblind')[1]
     color_rib_200 = seaborn.color_palette('colorblind')[2]
 
+    # color_t_24 = seaborn.color_palette('colorblind')[3]
+    # color_t_72 = seaborn.color_palette('colorblind')[4]
+
+    # palette = [color_t_72,color_t_72, color_t_72, color_t_72,color_t_72, color_t_72]
+
     palette = [color_rib_0, color_rib_50, color_rib_200,color_rib_0,color_rib_50,color_rib_200]
-    hatches = [ '\\\\\\\\\\', '\\\\\\\\\\','\\\\\\\\\\', '\\\\\\\\\\','\\\\\\\\\\', '\\\\\\\\\\']
+    # hatches = [ '\\\\\\\\\\', '\\\\\\\\\\','\\\\\\\\\\', '\\\\\\\\\\','\\\\\\\\\\', '\\\\\\\\\\']
 
     #### Customize box plot appearance based on colors and hatches
     for i,box in enumerate(box_plot.patches):
         color = palette[i]
-        hatch = hatches[i]
+        # hatch = hatches[i]
         box.set_edgecolor(color)
-        box.set_facecolor(mpl.colors.to_rgba(color, 0.7)) # Semi-transparent fill
-        box.set_hatch(hatch)
+        box.set_facecolor(mpl.colors.to_rgba(color, 0.5)) # Semi-transparent fill
+        # box.set_hatch(hatch)
 
         #### Iterate over whiskers and median lines
-        for j in range(6*i,6*(i+1)):
-            box_plot.lines[j].set_color(color)
+        for j in range(7*i,7*(i+1)):
+            if j%(7*i+4)==0 and j!= 0:
+                box_plot.lines[j].set_color(mpl.colors.to_rgba(color,0))
+            else:
+                box_plot.lines[j].set_color(color)
 
     #### Create a custom legend for ribose concentrations
-    legend_elements = [mpl.patches.Patch(facecolor=mpl.colors.to_rgba(color_rib_0,0.7), edgecolor=color_rib_0,  lw=4, label='0 mM'), 
-            mpl.patches.Patch(facecolor=mpl.colors.to_rgba(color_rib_50,0.7),edgecolor=color_rib_50, lw=4, label='50 mM'), 
-            mpl.patches.Patch(facecolor=mpl.colors.to_rgba(color_rib_200,0.7),edgecolor=color_rib_200, lw=4, label='200 mM')]
+    legend_elements = [mpl.patches.Patch(facecolor=mpl.colors.to_rgba(color_rib_0,0.5), edgecolor=color_rib_0,  lw=4, label='0 mM'), 
+            mpl.patches.Patch(facecolor=mpl.colors.to_rgba(color_rib_50,0.5),edgecolor=color_rib_50, lw=4, label='50 mM'), 
+            mpl.patches.Patch(facecolor=mpl.colors.to_rgba(color_rib_200,0.5),edgecolor=color_rib_200, lw=4, label='200 mM')]
 
-    plt.legend(handles=legend_elements, fontsize='x-small')
+    # legend_elements = [mpl.patches.Patch(facecolor=mpl.colors.to_rgba(color_t_72,0.5),edgecolor=color_t_72, lw=4, label='72 h')]
+
+    plt.legend(handles=legend_elements,frameon=False, loc='upper right',fontsize=15)
 
     #### Set axis labels and ticks
-    plt.ylabel(f'Growth relative to t$_0$')
-    plt.yticks(np.arange(0, 6.1, 2))
+    plt.ylabel(f'Growth relative to t$_0$',fontsize=15)
+    plt.yticks(np.arange(0, 6.1, 2),fontsize=15)
     box_plot.set_xticks([-0.2,0.2,0.8,1.2,1.8,2.2]) 
-    box_plot.set_xticklabels(['Control', 'GM6001','Control', 'GM6001','Control', 'GM6001'], rotation=45,ha='right') 
+    box_plot.set_xticklabels(['Control', 'GM6001','Control', 'GM6001','Control', 'GM6001'], rotation=45,ha='right',fontsize=15) 
+
+    ax = plt.gca()  # Get current axis
+    ax.spines["bottom"].set_linewidth(2)  # X-axis
+    ax.spines["left"].set_linewidth(2)    # Y-axis
+    ax.tick_params(axis='both', which='major', width=2)
+    
+    seaborn.despine()
 
     #### Set plot title
     if title:
-        plt.title(r'$\bf{Spheroid\,growth\,relative\,to\,t_0}$' + f'\n{prolif=}, {max_mot_speed=}\n{cell_adh=}, {cell_rep=}, {r_density=}', fontsize=12)
+        plt.title(r'$\bf{Spheroid\,growth\,relative\,to\,t_0}$' + f'\n{prolif=}, {max_mot_speed=}\n{cell_adh=}, {cell_rep=}, {r_density=}')
     
     #### Save the plot
     plt.savefig(save_folder + f'plots/spheroid_area_growth_box_plot_{simulation}.png', bbox_inches="tight",dpi=600)
@@ -176,62 +198,98 @@ def box_plot_delaunay_mean_distance(data, save_folder, title=True):
     df = pd.concat(df_list, copy=False, axis=0)
 
     #### Create plot
-    plt.figure(figsize=(4, 5), num=simulation+1)
+    fig = plt.figure(figsize=(4, 4), num=simulation+1)
+    plt.rcParams.update({'font.weight': 'bold',
+        'axes.labelweight': 'bold'})
 
     #### Set seaborn context and style
-    seaborn.set_context("talk")
+    seaborn.set_context("paper")
     seaborn.set_style('ticks')
+    # seaborn.despine(top=True,right=True)
     seaborn.despine()
 
     #### Melt DataFrame
     df = pd.melt(df, id_vars=['simulation', 'ribose'], var_name='t', value_name='delaunay_distance', ignore_index=True)
 
     #### Filter for specific time points
-    df = df[df['t'].isin(['10','72'])]
-    # df = df[df['t'].isin(['10','96'])]
+    if simulation == 293:
+        df = df[df['t'].isin(['24','72'])]
+    elif simulation == 240:
+        df = df[df['t'].isin(['24','96'])]
 
     #### Create a boxplot of the Delaunay mean distance
-    box_plot = seaborn.boxplot(data=df, x='ribose', y='delaunay_distance', hue='t', fliersize=0,legend=False, linewidth=4,gap=0.2)
+    meanlineprops = dict(linestyle='-',linewidth=4)
+    box_plot = seaborn.boxplot(data=df, x='ribose', y='delaunay_distance', hue='t', fliersize=0,legend=False, linewidth=4,gap=0.2, showmeans=True, meanline=True, meanprops=meanlineprops)
 
     #### Define colors and hatches for the box plots
     color_rib_0 = seaborn.color_palette('colorblind')[0]
     color_rib_50 = seaborn.color_palette('colorblind')[1]
     color_rib_200 = seaborn.color_palette('colorblind')[2]
 
-    palette = [color_rib_0, color_rib_50, color_rib_200,color_rib_0,color_rib_50,color_rib_200]
-    hatches = ['','','','\\\\\\\\', '\\\\\\\\', '\\\\\\\\']
+    color_t_24 = seaborn.color_palette('colorblind')[5]
+    color_t_24 = seaborn.color_palette('colorblind')[3]
+    color_t_72 = seaborn.color_palette('colorblind')[4]
+    color_t_96 = seaborn.color_palette('colorblind')[9]
+
+    if simulation == 293:
+        palette = [color_t_24, color_t_24,color_t_24, color_t_72,color_t_72, color_t_72]
+    elif simulation == 240:
+        palette = [color_t_24, color_t_24,color_t_24, color_t_96,color_t_96, color_t_96]
+    # hatches = ['','','','\\\\\\\\', '\\\\\\\\', '\\\\\\\\']
     # hatches = ['','','','//////', '//////', '//////']
 
     #### Customize box plot appearance based on colors and hatches
     for i,box in enumerate(box_plot.patches):
         color = palette[i]
-        hatch = hatches[i]
+        # hatch = hatches[i]
         box.set_edgecolor(color)
-        box.set_facecolor(mpl.colors.to_rgba(color, 0.7))
-        box.set_hatch(hatch)
-
+        box.set_facecolor(mpl.colors.to_rgba(color, 0.5))
+        # box.set_hatch(hatch)
         #### Iterate over whiskers and median lines
-        for j in range(6*i,6*(i+1)):
-            box_plot.lines[j].set_color(color)
+        for j in range(7*i,7*(i+1)):
+            if j%(7*i+4)==0 and j!= 0:
+                box_plot.lines[j].set_color(mpl.colors.to_rgba(color,0))
+            else:
+                box_plot.lines[j].set_color(color)
 
     #### Create a custom legend for ribose concentrations
-    legend_elements = [mpl.patches.Patch(facecolor=mpl.colors.to_rgba(color_rib_0,0.7), edgecolor=color_rib_0,  lw=4, label='0 mM'), 
-            mpl.patches.Patch(facecolor=mpl.colors.to_rgba(color_rib_50,0.7),edgecolor=color_rib_50, lw=4, label='50 mM'), 
-            mpl.patches.Patch(facecolor=mpl.colors.to_rgba(color_rib_200,0.7),edgecolor=color_rib_200, lw=4, label='200 mM')]
+    # legend_elements = [mpl.patches.Patch(facecolor=mpl.colors.to_rgba(color_rib_0,0.5), edgecolor=color_rib_0,  lw=4, label='0 mM'), 
+    #         mpl.patches.Patch(facecolor=mpl.colors.to_rgba(color_rib_50,0.5),edgecolor=color_rib_50, lw=4, label='50 mM'), 
+    #         mpl.patches.Patch(facecolor=mpl.colors.to_rgba(color_rib_200,0.5),edgecolor=color_rib_200, lw=4, label='200 mM')]
 
-    plt.legend(handles=legend_elements, fontsize='x-small')
+    if simulation == 293:
+        legend_elements = [mpl.patches.Patch(facecolor=mpl.colors.to_rgba(color_t_24,0.5), edgecolor=color_t_24,  lw=4, label='24 h'), 
+            mpl.patches.Patch(facecolor=mpl.colors.to_rgba(color_t_72,0.5),edgecolor=color_t_72, lw=4, label='72 h')]
+    elif simulation == 240:
+        legend_elements = [mpl.patches.Patch(facecolor=mpl.colors.to_rgba(color_t_24,0.5), edgecolor=color_t_24,  lw=4, label='24 h'), 
+            mpl.patches.Patch(facecolor=mpl.colors.to_rgba(color_t_96,0.5),edgecolor=color_t_96, lw=4, label='96 h')]
+
+    plt.legend(handles=legend_elements, ncol=2, frameon=False, loc='upper center',bbox_to_anchor=(0.5, 1.2),fontsize=15)
 
     #### Set axis labels and ticks
-    plt.ylabel(r'Delaunay mean distance [$\mu$m]')
-    plt.yticks(np.arange(15, 26, 5))
-    plt.xlabel("Time [h]")
-    box_plot.set_xticks([-0.2,0.2,0.8,1.2,1.8,2.2]) 
-    box_plot.set_xticklabels([10,72,10,72,10,72]) 
-    # box_plot.set_xticklabels([10,96,10,96,10,96]) 
+    plt.ylabel(r'Delaunay mean distance [$\mu$m]',fontsize=15)
+    if simulation == 240:
+        plt.yticks(np.arange(12, 28.1, 4),fontsize=15)
+    elif simulation == 293:
+        plt.yticks(np.arange(15, 30.1, 5),fontsize=15)
+
+    plt.xlabel("Ribose [mM]",fontsize=15)
+    # box_plot.set_xticks([-0.2,0.2,0.8,1.2,1.8,2.2]) 
+    box_plot.set_xticks([0,1,2]) 
+    box_plot.set_xticklabels([0,50,200],fontsize=15) 
+    # box_plot.set_xticklabels([24,72,24,72,24,72]) 
+    # box_plot.set_xticklabels([24,96,24,96,24,96]) 
+
+    ax = plt.gca()  # Get current axis
+    ax.spines["bottom"].set_linewidth(2)  # X-axis
+    ax.spines["left"].set_linewidth(2)    # Y-axis
+    ax.tick_params(axis='both', which='major', width=2)
+    
+    seaborn.despine()
 
     #### Set plot title
     if title:
-        plt.title(r'$\bf{Delaunay\,mean\,distance}$' + f'\n{prolif=}, {max_mot_speed=}\n{cell_adh=}, {cell_rep=}, {r_density=}', fontsize=12)
+        plt.title(r'$\bf{Delaunay\,mean\,distance}$' + f'\n{prolif=}, {max_mot_speed=}\n{cell_adh=}, {cell_rep=}, {r_density=}')
         
     #### Save the plot
     plt.savefig(save_folder + f'plots/delaunay_mean_distance_box_plot_{simulation}.png', bbox_inches="tight")
@@ -300,62 +358,101 @@ def box_plot_cell_count(data, save_folder, title=True):
     df = pd.concat(df_list, copy=False, axis=0)
 
     #### Create plot
-    plt.figure(figsize=(4, 5), num=simulation+2)
+    fig = plt.figure(figsize=(4, 4), num=simulation+2)
+    plt.rcParams.update({'font.weight': 'bold',
+        'axes.labelweight': 'bold'})
 
     #### Set seaborn context and style
-    seaborn.set_context("talk")
+    seaborn.set_context("paper")
     seaborn.set_style('ticks')
-    seaborn.despine()
 
     #### Melt DataFrame
     df = pd.melt(df, id_vars=['simulation', 'ribose'], var_name='t', value_name='cell_count', ignore_index=True)
 
     #### Filter for specific time points
-    df = df[df['t'].isin(['24','72'])]
-    # df = df[df['t'].isin(['24','96'])]
+    if simulation == 293:
+        df = df[df['t'].isin(['24','72'])]
+    elif simulation == 240:
+        df = df[df['t'].isin(['24','96'])]
 
     #### Create a boxplot of the cell count
-    box_plot = seaborn.boxplot(data=df, x='ribose', y='cell_count', hue='t', fliersize=0,legend=False, linewidth=4, gap=0.2)
+    meanlineprops = dict(linestyle='-',linewidth=4)
+    box_plot = seaborn.boxplot(data=df, x='ribose', y='cell_count', hue='t', fliersize=0,legend=False, linewidth=4, gap=0.2, showmeans=True, meanline=True, meanprops=meanlineprops)
 
     #### Define colors and hatches for the box plots
     color_rib_0 = seaborn.color_palette('colorblind')[0]
     color_rib_50 = seaborn.color_palette('colorblind')[1]
     color_rib_200 = seaborn.color_palette('colorblind')[2]
 
-    palette = [color_rib_0, color_rib_50, color_rib_200,color_rib_0,color_rib_50,color_rib_200]
-    hatches = ['','','','\\\\\\\\', '\\\\\\\\', '\\\\\\\\']
+    color_t_24 = seaborn.color_palette('colorblind')[3]
+    color_t_72 = seaborn.color_palette('colorblind')[4]
+    color_t_96 = seaborn.color_palette('colorblind')[9]
+
+    if simulation == 293:
+        palette = [color_t_24, color_t_24, color_t_24, color_t_72, color_t_72, color_t_72]
+    elif simulation == 240:
+        palette = [color_t_24, color_t_24, color_t_24, color_t_96, color_t_96, color_t_96]
+
+    # palette = [color_rib_0, color_rib_50, color_rib_200,color_rib_0,color_rib_50,color_rib_200]
+    # hatches = ['','','','\\\\\\\\', '\\\\\\\\', '\\\\\\\\']
     # hatches = ['','','','//////', '//////', '//////']
 
     #### Customize box plot appearance based on colors and hatches
     for i,box in enumerate(box_plot.patches):
+        print(f'{i=}')
         color = palette[i]
-        hatch = hatches[i]
+        # hatch = hatches[i]
         box.set_edgecolor(color)
-        box.set_facecolor(mpl.colors.to_rgba(color, 0.7))
-        box.set_hatch(hatch)
+        box.set_facecolor(mpl.colors.to_rgba(color, 0.5))
+        # box.set_hatch(hatch)
 
         #### Iterate over whiskers and median lines
-        for j in range(6*i,6*(i+1)):
-            box_plot.lines[j].set_color(color)
+        for j in range(7*i,7*(i+1)):
+            if j%(7*i+4)==0 and j!= 0:
+                box_plot.lines[j].set_color(mpl.colors.to_rgba(color,0))
+            else:
+                box_plot.lines[j].set_color(color)
+
 
     #### Create a custom legend for ribose concentrations
-    legend_elements = [mpl.patches.Patch(facecolor=mpl.colors.to_rgba(color_rib_0,0.7), edgecolor=color_rib_0,  lw=4, label='0 mM'), 
-            mpl.patches.Patch(facecolor=mpl.colors.to_rgba(color_rib_50,0.7),edgecolor=color_rib_50, lw=4, label='50 mM'), 
-            mpl.patches.Patch(facecolor=mpl.colors.to_rgba(color_rib_200,0.7),edgecolor=color_rib_200, lw=4, label='200 mM')]
+    # legend_elements = [mpl.patches.Patch(facecolor=mpl.colors.to_rgba(color_rib_0,0.5), edgecolor=color_rib_0,  lw=4, label='0 mM'), 
+    #         mpl.patches.Patch(facecolor=mpl.colors.to_rgba(color_rib_50,0.5),edgecolor=color_rib_50, lw=4, label='50 mM'), 
+    #         mpl.patches.Patch(facecolor=mpl.colors.to_rgba(color_rib_200,0.5),edgecolor=color_rib_200, lw=4, label='200 mM')]
 
-    plt.legend(handles=legend_elements, fontsize='x-small')
+    if simulation == 293:
+        legend_elements = [mpl.patches.Patch(facecolor=mpl.colors.to_rgba(color_t_24,0.5), edgecolor=color_t_24,  lw=4, label='24 h'), 
+            mpl.patches.Patch(facecolor=mpl.colors.to_rgba(color_t_72,0.5),edgecolor=color_t_72, lw=4, label='72 h')]
+    elif simulation == 240:
+        legend_elements = [mpl.patches.Patch(facecolor=mpl.colors.to_rgba(color_t_24,0.5), edgecolor=color_t_24,  lw=4, label='24 h'), 
+            mpl.patches.Patch(facecolor=mpl.colors.to_rgba(color_t_96,0.5),edgecolor=color_t_96, lw=4, label='96 h')]
+
+    plt.legend(handles=legend_elements, ncol=2, frameon=False, loc='upper center',bbox_to_anchor=(0.5, 1.2),fontsize=15)
 
     #### Set axis labels and ticks
-    plt.ylabel(f'Cell count')
-    plt.yticks([0,250,500,750,1000])
-    plt.xlabel("Time [h]")
-    box_plot.set_xticks([-0.2,0.2,0.8,1.2,1.8,2.2]) 
-    box_plot.set_xticklabels([24,72,24,72,24,72]) 
+    plt.ylabel(f'Cell count',fontsize=15)
+    if simulation == 240:
+        box_plot.set_yticks([0,240,300,500,700]) 
+        box_plot.set_yticklabels(['',240,300,500,700],fontsize=15) 
+    elif simulation == 293:
+        plt.yticks(np.arange(0, 1500.1, 500),fontsize=15)
+    plt.xlabel("Ribose [mM]",fontsize=15)
+    box_plot.set_xticks([0,1,2]) 
+    box_plot.set_xticklabels([0,50,200],fontsize=15) 
+    # plt.xlabel("Time [h]")
+    # box_plot.set_xticks([-0.2,0.2,0.8,1.2,1.8,2.2]) 
+    # box_plot.set_xticklabels([24,72,24,72,24,72]) 
     # box_plot.set_xticklabels([24,96,24,96,24,96]) 
+
+    ax = plt.gca()  # Get current axis
+    ax.spines["bottom"].set_linewidth(2)  # X-axis
+    ax.spines["left"].set_linewidth(2)    # Y-axis
+    ax.tick_params(axis='both', which='major', width=2)
+
+    seaborn.despine()
 
     #### Set plot title
     if title == True:
-        plt.title(r'$\bf{Cell\,number}$'+f'\n{prolif=}, {max_mot_speed=}\n{cell_adh=}, {cell_rep=}, {r_density=}', fontsize = 12)
+        plt.title(r'$\bf{Cell\,number}$'+f'\n{prolif=}, {max_mot_speed=}\n{cell_adh=}, {cell_rep=}, {r_density=}')
 
     #### Save the plot
     plt.savefig(save_folder + f'plots/cell_count_box_plot_{simulation}.png', bbox_inches = "tight")

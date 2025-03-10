@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib as mpl
 import scipy.ndimage
 
-def plots_speed_vs_degr_delaunay(data, simulation_name, save_folder, title=True):
+def plots_speed_vs_degr_delaunay(data, simulation_name, save_folder, title=True, contour=False):
     """
     Plot the relationship between max migration speed and degradation rate for the Delaunay distance
 
@@ -16,7 +16,9 @@ def plots_speed_vs_degr_delaunay(data, simulation_name, save_folder, title=True)
     - title: Boolean to decide whether to include a title on the plot
     """
     # plt.figure()
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(7.5,5))
+    seaborn.set_context("paper")
+    seaborn.set_style('ticks')
 
     #### Collect simulation parameters from the DataFrame
     ribose = data['ribose'].iloc[0]
@@ -52,10 +54,10 @@ def plots_speed_vs_degr_delaunay(data, simulation_name, save_folder, title=True)
     annot_df = pd.DataFrame(columns=columns, index=index).fillna('NaN')
 
     #### Fill DataFrame with means and standard deviations
-    for adh, rep, cluster_mean, cluster_std in zip(max_mot_speed, r_density, delaunay_distance_mean, delaunay_distance_std):
-        df[adh][rep] = cluster_mean
-        annot = f"{cluster_mean:.2f}\n±{cluster_std:.2f}"
-        annot_df[adh][rep] = annot
+    for mot, degr, mean, std in zip(max_mot_speed, r_density, delaunay_distance_mean, delaunay_distance_std):
+        df[mot][degr] = mean
+        annot = f"{mean:.2f}\n±{std:.2f}"
+        annot_df[mot][degr] = annot
 
     annot_arr = annot_df.to_numpy()
 
@@ -70,32 +72,39 @@ def plots_speed_vs_degr_delaunay(data, simulation_name, save_folder, title=True)
         color_rib = seaborn.color_palette('colorblind')[2]
         color_rib_dark = seaborn.color_palette('dark')[2]
 
+    color_rib = seaborn.color_palette('colorblind')[0]
+    color_rib_dark = seaborn.color_palette('dark')[0]
+
     #### Define colormap
     cmap = mpl.colors.LinearSegmentedColormap.from_list("", ['white', color_rib, color_rib_dark])
 
     #### Plot heatmap
-    hmap = seaborn.heatmap(df, cmap=cmap, vmin=15, vmax=30, cbar_kws={'label': r'Delaunay mean distance [$\mu$m]'},ax=ax)
-    # ax = seaborn.heatmap(df, cmap=cmap, vmin=15, vmax=30, annot=annot_arr, fmt="s", cbar_kws={'label': r'Delaunay mean distance [$\mu$m]'})
+    # hmap = seaborn.heatmap(df,cmap=cmap,vmin=15, vmax=30,ax=ax)
+    hmap = seaborn.heatmap(df, cmap=cmap, vmin=15, vmax=30, annot=annot_arr, annot_kws={"fontsize":10}, fmt="s")
     hmap.figure.axes[-1].yaxis.set_label_position('left')
+    cbar = ax.collections[0].colorbar
+    cbar.ax.tick_params(labelsize=12)
+    cbar.set_label(label=r'Delaunay mean distance [$\mu$m]',fontsize=12)
 
-    df = scipy.ndimage.gaussian_filter(df, 1)
 
-    ax.contour(np.arange(.5, df.shape[1]), np.arange(.5, df.shape[0]), df, colors='white',alpha=0.5)
-
+    if contour == True:
+        df = scipy.ndimage.gaussian_filter(df, 1)
+        ax.contour(np.arange(.5, df.shape[1]), np.arange(.5, df.shape[0]), df, colors='white',alpha=0.5)
 
     #### Set axis labels and title
-    plt.ylabel(r'$r_{deg,0}$ [min$^{-1}$]')
-    plt.xlabel(r'$S_0$ [$\mu$m$\cdot$min$^{-1}$]')
+    plt.ylabel(r'$r_{deg,0}$ [min$^{-1}$]', color='black', fontsize=12)
+    plt.yticks(color='black', fontsize=12,rotation=45,va='top')
+    plt.xlabel(r'$S_0$ [$\mu$m$\cdot$min$^{-1}$]', color='black', fontsize=12)
+    plt.xticks(color='black', fontsize=12)
     if title:
-        plt.title(r'$\bf{Delaunay\,mean\,distance}$' +
-                  f'\nAdhesion={cell_adh}, repulsion={cell_rep}, prolif={prolif}' + 
-                  f'\nt={max(t)/60}h', fontsize=12)
+        # plt.title(r'$\bf{Delaunay\,mean\,distance\,at\,{%i}\,h}$' %(max(t)/60) + '\n' r'Proliferation $r_{div}$=0.00072 min$^{-1}$',color='black', fontsize=12)
+        plt.title(r'Proliferation $r_{div}$=%f min$^{-1}$' %(round(prolif,3)),fontsize=12)
 
     plt.savefig(save_folder + f'plots/speed_vs_degr_delaunay_rib{ribose}_{simulation_name}_t{int(max(t)/60)}.png', bbox_inches="tight")
     plt.close()
 
 
-def plots_speed_vs_degr_spheroid_area_growth(data, simulation_name, save_folder, title=True):
+def plots_speed_vs_degr_spheroid_area_growth(data, simulation_name, save_folder, title=True, contour=False):
     """
     Plot the relationship between max migration speed and degradation rate for spheroid area growth
 
@@ -106,7 +115,9 @@ def plots_speed_vs_degr_spheroid_area_growth(data, simulation_name, save_folder,
     - title: Boolean to decide whether to include a title on the plot
     """
     # plt.figure()
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(7.5,5))
+    seaborn.set_context("paper")
+    seaborn.set_style('ticks')
 
     #### Collect simulation parameters from the DataFrame
     ribose = data['ribose'].iloc[0]
@@ -162,32 +173,40 @@ def plots_speed_vs_degr_spheroid_area_growth(data, simulation_name, save_folder,
         color_rib = seaborn.color_palette('colorblind')[2]
         color_rib_dark = seaborn.color_palette('dark')[2]
 
+    color_rib = seaborn.color_palette('colorblind')[0]
+    color_rib_dark = seaborn.color_palette('dark')[0]
+
     #### Define colormap
     cmap = mpl.colors.LinearSegmentedColormap.from_list("", ['white', color_rib, color_rib_dark])
 
     #### Plot heatmap
-    hmap = seaborn.heatmap(df, cmap=cmap, vmin=1, vmax=8, cbar_kws={'label': 'Growth relative to t$_0$'},ax=ax)
-    # ax = seaborn.heatmap(df, cmap=cmap, vmin=1, vmax=8, annot=annot_arr, fmt="s", cbar_kws={'label': 'Growth relative to t$_0$'})
+    # hmap = seaborn.heatmap(df, cmap=cmap, vmin=1, vmax=8,ax=ax)
+    hmap = seaborn.heatmap(df,cmap=cmap, vmin=1, vmax=8, annot=annot_arr, annot_kws={"fontsize":10}, fmt="s")
     hmap.figure.axes[-1].yaxis.set_label_position('left')
+    cbar = ax.collections[0].colorbar
+    cbar.ax.tick_params(labelsize=12)
+    cbar.set_label(label='Growth relative to t$_0$',fontsize=12)
 
-    df = scipy.ndimage.gaussian_filter(df, 1)
-
-    ax.contour(np.arange(.5, df.shape[1]), np.arange(.5, df.shape[0]), df, colors='white', alpha=0.5)
-
+    
+    if contour == True:
+        df = scipy.ndimage.gaussian_filter(df, 1)
+        ax.contour(np.arange(.5, df.shape[1]), np.arange(.5, df.shape[0]), df, colors='white', alpha=0.5)
 
     #### Set axis labels and title
-    plt.ylabel(r'$r_{deg,0}$ [min$^{-1}$]')
-    plt.xlabel(r'$S_0$ [$\mu$m$\cdot$min$^{-1}$]')
+    plt.ylabel(r'$r_{deg,0}$ [min$^{-1}$]', color='black', fontsize=12)
+    plt.yticks(color='black', fontsize=12,rotation=45,va='top')
+    plt.xlabel(r'$S_0$ [$\mu$m$\cdot$min$^{-1}$]', color='black', fontsize=12)
+    plt.xticks(color='black', fontsize=12)
+    
     if title:
-        plt.title(r'$\bf{Spheroid\,growth\,relative\,to\,t_0}$' +
-                  f'\nAdhesion={cell_adh}, repulsion={cell_rep}, prolif={prolif}' + 
-                  f'\nt={max(t)/60}h', fontsize=12)
+        # plt.title(r'$\bf{Spheroid\,growth\,relative\,to\,t_0\,at\,{%i}\,h}$' %(max(t)/60) + '\n' r'Proliferation $r_{div}$=0.00072 min$^{-1}$',color='black', fontsize=12)
+        plt.title(r'Proliferation $r_{div}$=%f min$^{-1}$' %(round(prolif,3)),fontsize=12)
 
     plt.savefig(save_folder + f'plots/speed_vs_degr_spheroid_area_growth_rib{ribose}_{simulation_name}_t{int(max(t)/60)}.png', bbox_inches="tight")
     plt.close()
 
 
-def plots_sigma_vs_delta_spheroid_area_growth(data, simulation_name, save_folder, title=True):
+def plots_sigma_vs_delta_spheroid_area_growth(data, simulation_name, save_folder, title=True, contour=False):
     """
     Plot the relationship between sigma and delta parameters for spheroid area growth
 
@@ -197,9 +216,10 @@ def plots_sigma_vs_delta_spheroid_area_growth(data, simulation_name, save_folder
     - save_folder: Directory path to save the plot.
     - title: Boolean to decide whether to include a title on the plot
     """
-    
-    fig, ax = plt.subplots()
-
+    fig, ax = plt.subplots(figsize=(7.5,5))
+    seaborn.set_context("paper")
+    seaborn.set_style('ticks')
+ 
     #### Collect simulation parameters from the DataFrame
     ribose = data['ribose'].iloc[0]
     t = np.unique(data['t']).astype(int)
@@ -254,28 +274,33 @@ def plots_sigma_vs_delta_spheroid_area_growth(data, simulation_name, save_folder
         color_rib = seaborn.color_palette('colorblind')[2]
         color_rib_dark = seaborn.color_palette('dark')[2]
 
+    color_rib = seaborn.color_palette('colorblind')[0]
+    color_rib_dark = seaborn.color_palette('dark')[0]
+
     #### Define colormap
     cmap = mpl.colors.LinearSegmentedColormap.from_list("", ['white', color_rib, color_rib_dark])
 
     #### Plot heatmap
-    # ax = seaborn.heatmap(df, cmap=cmap, vmin=1, vmax=8, annot=annot_arr, fmt="s", cbar_kws={'label': 'Growth relative to t$_0$'})
-    hmap = seaborn.heatmap(df, cmap=cmap, vmin=1, vmax=8, cbar_kws={'label': 'Growth relative to t$_0$'}, ax=ax)
+    # hmap = seaborn.heatmap(df, cmap=cmap, vmin=1, vmax=8, ax=ax)
+    hmap = seaborn.heatmap(df, cmap=cmap, vmin=1, vmax=8, annot=annot_arr, annot_kws={"fontsize":10}, fmt="s")
     hmap.figure.axes[-1].yaxis.set_label_position('left')
+    cbar = ax.collections[0].colorbar
+    cbar.ax.tick_params(labelsize=12)
+    cbar.set_label(label='Growth relative to t$_0$',fontsize=12)
 
-    df = scipy.ndimage.gaussian_filter(df, 0.7)
-
-    ax.contour(np.arange(.5, df.shape[1]), np.arange(.5, df.shape[0]), df, colors='white')
+    if contour == True:
+        df = scipy.ndimage.gaussian_filter(df, 0.7)
+        ax.contour(np.arange(.5, df.shape[1]), np.arange(.5, df.shape[0]), df, colors='white')
 
     #### Set axis labels and title
-    plt.ylabel(r"$\delta$ [mM$^{-1}$]")
-    plt.xlabel(r"$\sigma$ [mM$^{-1}$]")
-    plt.yticks(rotation=45,va='top')
-    plt.xticks(rotation=45,ha='right')
+    plt.ylabel(r"$\delta$ [mM$^{-1}$]", color='black', fontsize=12)
+    plt.xlabel(r"$\sigma$ [mM$^{-1}$]", color='black', fontsize=12)
+    plt.yticks(rotation=45,va='top', color='black', fontsize=12)
+    plt.xticks(rotation=45,ha='right', color='black', fontsize=12)
 
     if title:
-        plt.title(r'$\bf{Spheroid\,growth\,relative\,to\,t_0}$' +
-                  f'\nAdhesion={cell_adh}, repulsion={cell_rep}, prolif={prolif}' + 
-                  f'\nt={max(t)/60}h', fontsize=12)
+        # plt.title(r'$\bf{Spheroid\,growth\,relative\,to\,t_0\,at\,{%i}\,h}$' %(max(t)/60) + '\n' r'Proliferation $r_{div}$=%f min$^{-1}$' %(round(prolif,5)),fontsize=12)
+        plt.title(f'Ribose {ribose} mM', fontsize=12)
 
     plt.savefig(save_folder + f'plots/sigma_vs_delta_spheroid_area_growth_rib{ribose}_{simulation_name}_t{int(max(t)/60)}.png', bbox_inches="tight")
     plt.close()

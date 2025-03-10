@@ -66,8 +66,12 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, title=
     cell_rep = data['cell_rep'].iloc[0]
     max_mot_speed = data['max_mot_speed'].iloc[0]
     r_anisotropy = data['anisotropy_increase_rate'].iloc[0]
-    r_density = data['ecm_density_rate'].iloc[0]
+    r_degr = data['ecm_density_rate'].iloc[0]
+    # r_push = data['ecm_pushing_rate'].iloc[0]
     r_orientation = data['fiber_realignment_rate'].iloc[0]
+    chemotaxis_bias = data['chemotaxis_bias'].iloc[0]
+    ecm_sensitivity = data['ecm_sensitivity'].iloc[0]
+
 
     # load cell and microenvironment data
     mcds = pyMCDS(snapshot + '.xml', data_folder)
@@ -86,7 +90,7 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, title=
 
     #### Diffusion microenvironment
     xx, yy = mcds.get_2D_mesh()  # Mesh
-    #plane_oxy = mcds.get_concentrations('oxygen', 0.0)  # Oxyen (used for contour plot)
+    plane_oxy = mcds.get_concentrations('substrate', 0.0)  # Oxyen (used for contour plot)
 
     #### ECM microenvironment
     xx_ecm, yy_ecm = mcds.get_2D_ECM_mesh()  # Mesh
@@ -121,10 +125,10 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, title=
     ECM_x = mcds.data['ecm']['ECM_fields']['x_fiber_orientation'][:, :, 0]
     ECM_y = mcds.data['ecm']['ECM_fields']['y_fiber_orientation'][:, :, 0]
 
-    ECM_matrix = np.stack([ECM_x,ECM_y])
+    # ECM_matrix = np.stack([ECM_x,ECM_y])
     # print(ECM_matrix.max(), ECM_matrix.min())
     # mask out zero vectors
-    mask = plane_anisotropy > 0.0001
+    # mask = plane_anisotropy > 0.0001
 
     # # get unique cell types and radii
     # cell_df['radius'] = (cell_df['total_volume'].values * 3 / (4 * np.pi)) ** (1 / 3)
@@ -132,6 +136,14 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, title=
     ####################################################################################################################
     ####################################            Plotting                                    ########################
     ####################################################################################################################
+
+    # #### Plot style
+    # plt.style.use('ggplot')
+    plt.style.use('seaborn-v0_8-colorblind')
+
+    seaborn.set_context("paper")
+    seaborn.set_style('ticks')
+
 
     # start plot and make correct size
     # mpl.rcParams.update({'font.size': 12})
@@ -143,34 +155,38 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, title=
     
     # fig, ax = plt.subplots(figsize=(12, 12))
 
-    # ECM density
+    #### ECM density
     cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["white",seaborn.color_palette('colorblind')[3]])
-    # cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["white","#DA70D6"])
-
     plt.pcolormesh(xx_ecm,yy_ecm,ecm_density[:,:],cmap=cmap,vmin=0,vmax=1)
-    
-    #### Colorbar
-    # plt.colorbar(shrink=0.7,label='ECM density')
-    # ax.figure.axes[-1].yaxis.set_label_position('left')
 
+    #### Colorbar ECM density
+    cbar = plt.colorbar(shrink=0.9)
+    cbar.outline.set_visible(False)
+    ax.figure.axes[-1].yaxis.set_label_position('left')
+    cbar.ax.tick_params(labelsize=15, colors='black') 
+    cbar.set_label(label='ECM density',fontsize=15, color='black')
 
+    # #### Oxygen
+    # cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["white",seaborn.color_palette('colorblind')[4]])
+    # cs = plt.contourf(xx, yy, plane_oxy, cmap=cmap, levels=levels_o2, vmin=0,vmax=38)
+    # plt.colorbar(shrink=0.7,label='Chemical substrate')
+
+    # #### Anisotropy
+    # cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["white",seaborn.color_palette('colorblind')[1]])
+    # cs = plt.contourf(xx_ecm, yy_ecm, plane_anisotropy, cmap="YlGnBu", levels=levels_ecm)
     # plt.pcolormesh(xx_ecm,yy_ecm,plane_anisotropy[:,:],cmap=cmap,vmin=0,vmax=1)
     # plt.colorbar(shrink=0.7,label='ECM anisotropy')
 
-    # # add ECM orientation vectors unscaled by anistorpy ###
+    # #### add ECM orientation vectors unscaled by anistorpy ###
     # plt.quiver(xx, yy, 20*ECM_x, 20*ECM_y,
-    # pivot='middle', angles='xy', scale_units='xy', scale=1)#, headwidth=0,headlength=0, headaxislength=0)
+    # pivot='middle', angles='xy', scale_units='xy', scale=1, headwidth=0,headlength=0, headaxislength=0)
 
-    # add contour layer
-    # cs = plt.contourf(xx, yy, plane_oxy, cmap="Greens_r", levels=levels_o2)
-    # cs = plt.contourf(xx_ecm, yy_ecm, plane_anisotropy, cmap="YlGnBu", levels=levels_ecm)
-
-    # Add cells layer
+    #### Add cells layer
     for j in data['ID'].tolist():
-        circ = Circle((data[data['ID']==j]['position_x'], data[data['ID']==j]['position_y']),
-                        radius=data[data['ID']==j]['radius'], alpha=0.7, edgecolor='black',facecolor=seaborn.color_palette('colorblind')[2])
+        circ = Circle((data[data['ID']==j]['position_x'].iloc[0], data[data['ID']==j]['position_y'].iloc[0]),radius=data[data['ID']==j]['radius'].iloc[0], alpha=0.7, edgecolor='black',facecolor=seaborn.color_palette('colorblind')[2])
         ax.add_artist(circ)
 
+    #### Add scalebar 
     scalebar = AnchoredSizeBar(ax.transData,
                             100, r'100 [$\mu$m]', 'lower right', 
                             pad=0.1,
@@ -189,7 +205,6 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, title=
     # ax.set_ylabel(r'y [$\mu$m]',fontsize=12)
     #fig.colorbar(cs, ax=ax)
     
-    # plt.title('ribose concentration={r}mM\n t={t}min, cell speed={speed}micron/min'.format(r=ribose_concentration,t=t,speed=round(speed,2)))
 
     # Carefully place the command to make the plot square AFTER the color bar has been added.
     ax.axis('scaled')
@@ -200,15 +215,11 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, title=
     plt.ylim(-edge, edge)
     plt.xlim(-edge, edge)
 
-    # plt.title(f'{prolif=}, {cell_adh=}, {cell_rep=}, {max_mot_speed=}\n{r_density=}, {r_orientation=}, {r_anisotropy=}\nt={int(t)}',fontsize=12)
     if title == True:
-        plt.title(f'{prolif=}, {max_mot_speed=}\n{cell_adh=}, {cell_rep=}, {r_density=}',fontsize=10)
-    
-    #### Plot style
-    plt.style.use('ggplot')
-    plt.style.use('seaborn-v0_8-colorblind')
+        # plt.title(f'{prolif=}, {max_mot_speed=}\n{cell_adh=}, {cell_rep=}, {r_density=}',fontsize=10)
+        plt.title(f'chemo={chemotaxis_bias}, ecm_sens={ecm_sensitivity}\nS_cm={max_mot_speed}, {r_degr=}, {r_push=}')
 
-    # Plot output
+    #### Plot output
     if output_plot is True:
         plt.savefig(save_name,bbox_inches='tight')
     plt.close()
