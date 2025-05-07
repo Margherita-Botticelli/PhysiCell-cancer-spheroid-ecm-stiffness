@@ -134,7 +134,7 @@ for sim in simulations:
             else:
                 # print(f'#### {motility_speed=}, {proliferation=}, {adhesion=}, {repulsion=}, {r_density=} ####\n',flush=True)
 
-                print(f'simulation {sim} out of {simulation_id + num_simulations -1} ')
+                print(f'simulation {sim} out of {simulation_id + num_simulations -1} ') # type: ignore
 
             #### Select PhysiCell_settings file from config folder 
             tree = ET.parse('./config/PhysiCell_settings.xml')  
