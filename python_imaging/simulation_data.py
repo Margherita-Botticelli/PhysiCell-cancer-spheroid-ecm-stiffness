@@ -52,7 +52,7 @@ def reduce_mem_usage(df, verbose=True):
     return df
 
 # def snapshot_data(ribose, simulation, seed, snapshot, data_folder):
-def snapshot_data(simulation, seed, snapshot, data_folder):
+def snapshot_data(orientation,simulation, seed, snapshot, data_folder):
     """
     Process a single snapshot to extract cell data and simulation parameters.
 
@@ -94,11 +94,12 @@ def snapshot_data(simulation, seed, snapshot, data_folder):
 
     #### Rearrange columns and add simulation parameters
     # dictionary = ['simulation', 'ribose', 'seed', 't'] + list(cell_df.columns)
-    dictionary = ['simulation', 'seed', 't'] + list(cell_df.columns)
+    dictionary = ['simulation','orientation', 'seed', 't'] + list(cell_df.columns)
     cell_df['t'] = t
     cell_df['simulation'] = simulation
     cell_df['seed'] = seed
     # cell_df['ribose'] = ribose
+    cell_df['orientation'] = orientation
     cell_df = cell_df[dictionary]
 
     #### Add simulation parameters from XML settings file
@@ -120,6 +121,10 @@ def snapshot_data(simulation, seed, snapshot, data_folder):
     # cell_df['sigma'] = sigma
     # cell_df['delta'] = delta
 
+    initial_ecm_density = user_parameters.find('initial_ecm_density')  # type: ignore
+    initial_ecm_density = float(initial_ecm_density.text)  # type: ignore
+    cell_df['initial_ecm_density'] = initial_ecm_density  # type: ignore
+
     cell_cell_adhesion_strength = mechanics.find('cell_cell_adhesion_strength') # type: ignore
     cell_adh = float(cell_cell_adhesion_strength.text)  # type: ignore
     cell_df['cell_adh'] = cell_adh
@@ -137,8 +142,8 @@ def snapshot_data(simulation, seed, snapshot, data_folder):
     spheroid_area = spheroid_area_function(cell_df)
     cell_df['spheroid_area'] = spheroid_area
 
-    # delaunay_distance = delaunay_distance_function(cell_df)
-    # cell_df['delaunay_distance'] = delaunay_distance
+    delaunay_distance = delaunay_distance_function(cell_df)
+    cell_df['delaunay_distance'] = delaunay_distance
 
     #### Set index based on snapshot name
     index = int(snapshot.replace("output", ""))
@@ -147,8 +152,8 @@ def snapshot_data(simulation, seed, snapshot, data_folder):
     return cell_df
 
 
-# def simulation_data(data_folder_dir, simulation, ribose, seed, replace=False):
-def simulation_data(data_folder_dir, simulation, seed, replace=False):
+# def simulation_data(data_folder_dir, simulation, ribose, seed):
+def simulation_data(data_folder_dir, simulation, orientation, seed):
     """
     Process all snapshots for a given simulation and save the resulting DataFrame.
 
@@ -157,7 +162,6 @@ def simulation_data(data_folder_dir, simulation, seed, replace=False):
     - simulation: Simulation identifier.
     - ribose: Ribose identifier for the simulation.
     - seed: Random seed used in the simulation.
-    - replace: Boolean flag to replace existing files (default is False).
 
     Returns:
     - None
@@ -165,38 +169,32 @@ def simulation_data(data_folder_dir, simulation, seed, replace=False):
     # print(f"\n#### {ribose=}, {simulation=}, {seed=} ####\n", flush=True)
     print(f"\n#### {simulation=}, {seed=} ####\n", flush=True)
 
-    #### Check if DataFrame already exists and replace flag
+    #### Check if DataFrame already exists 
     # df_path = data_folder_dir + f'output_rib{ribose}_{simulation}_{seed}/dataframe_rib{ribose}_{simulation}_{seed}.pkl'
-    df_path = data_folder_dir + f'output_{simulation}_{seed}/dataframe_{simulation}_{seed}.pkl'
-    if os.path.exists(df_path) and not replace:
-        print(f"\nDataframe exists\n", flush=True)
-        return
-    else:
-        if replace:
-            print(f"\n!!! Replace {replace} !!!\n", flush=True)
+    df_path = data_folder_dir + f'output_{orientation}_{simulation}_{seed}/dataframe_{orientation}_{simulation}_{seed}.pkl'
 
-        #### Prepare data folder and process files
-        # data_folder = data_folder_dir + f'output_rib{ribose}_{simulation}_{seed}/'
-        data_folder = data_folder_dir + f'output_{simulation}_{seed}/'
-        files = os.listdir(data_folder)
-        files.sort()
+    #### Prepare data folder and process files
+    # data_folder = data_folder_dir + f'output_rib{ribose}_{simulation}_{seed}/'
+    data_folder = data_folder_dir + f'output_{orientation}_{simulation}_{seed}/'
+    files = os.listdir(data_folder)
+    files.sort()
 
-        df_list = []
-        for file in files:
-            if not re.search('_ECM\.mat', file):
-                continue
-            snapshot = file.split('_')[0]
-            # print(f'Processing snapshot {snapshot}', flush=True)
-            # df_new = snapshot_data(ribose, simulation, seed, snapshot, data_folder)
-            df_new = snapshot_data(simulation, seed, snapshot, data_folder)
+    df_list = []
+    for file in files:
+        if not re.search('_ECM\.mat', file):
+            continue
+        snapshot = file.split('_')[0]
+        # print(f'Processing snapshot {snapshot}', flush=True)
+        # df_new = snapshot_data(ribose, simulation, seed, snapshot, data_folder)
+        df_new = snapshot_data(orientation,simulation, seed, snapshot, data_folder)
 
-            #### Reduce memory usage and append to list
-            df_new = reduce_mem_usage(df_new, verbose=False)
-            df_list.append(df_new)
+        #### Reduce memory usage and append to list
+        df_new = reduce_mem_usage(df_new, verbose=False)
+        df_list.append(df_new)
 
-        #### Combine all DataFrames and save
-        df = pd.concat(df_list, copy=False, axis=0)
-        df.to_pickle(df_path)
+    #### Combine all DataFrames and save
+    df = pd.concat(df_list, copy=False, axis=0)
+    df.to_pickle(df_path)
 
-        return
+    return
 
