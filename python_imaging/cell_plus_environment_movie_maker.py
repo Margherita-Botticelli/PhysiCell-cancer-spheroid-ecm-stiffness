@@ -67,10 +67,11 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, title=
     max_mot_speed = data['max_mot_speed'].iloc[0]
     r_anisotropy = data['anisotropy_increase_rate'].iloc[0]
     r_degr = data['ecm_density_rate'].iloc[0]
-    # r_push = data['ecm_pushing_rate'].iloc[0]
+    r_push = data['ecm_pushing_rate'].iloc[0]
     r_orientation = data['fiber_realignment_rate'].iloc[0]
     chemotaxis_bias = data['chemotaxis_bias'].iloc[0]
     ecm_sensitivity = data['ecm_sensitivity'].iloc[0]
+    fiber_realignment_rate = data['fiber_realignment_rate'].iloc[0]
 
 
     # load cell and microenvironment data
@@ -109,9 +110,9 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, title=
     num_levels = 10  # 25 works well for ECM, 38 works well for oxygen
 
     # Make levels for contours
-    levels_o2 = np.linspace(1e-14, 38, num_levels)
+    levels_o2 = np.linspace(1e-14, 38, num=38)
     # levels_ecm = np.linspace(1e-14, 1.0, num_levels)
-    levels_ecm = np.linspace(0.90, 0.93, num_levels) # for the march environment - need to especially highlight small changes in anistoropy. 
+    levels_ecm = np.linspace(0.90, 0.93, num=25) # for the march environment - need to especially highlight small changes in anistoropy. 
 
     ##### Process data for plotting - weight fibers by anisotropy, mask out 0 anisotropy ECM units, get cell radii and types
 
@@ -142,14 +143,14 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, title=
     plt.style.use('seaborn-v0_8-colorblind')
 
     seaborn.set_context("paper")
-    seaborn.set_style('ticks')
+    # seaborn.set_style('ticks')
 
 
     # start plot and make correct size
     # mpl.rcParams.update({'font.size': 12})
     edge = 500
     number = int(t)
-    fig = plt.figure()
+    fig = plt.figure(figsize=(6,6))
     ax = plt.gca()
 
     
@@ -159,17 +160,18 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, title=
     cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["white",seaborn.color_palette('colorblind')[3]])
     plt.pcolormesh(xx_ecm,yy_ecm,ecm_density[:,:],cmap=cmap,vmin=0,vmax=1)
 
-    #### Colorbar ECM density
-    cbar = plt.colorbar(shrink=0.9)
-    cbar.outline.set_visible(False)
-    ax.figure.axes[-1].yaxis.set_label_position('left')
-    cbar.ax.tick_params(labelsize=15, colors='black') 
-    cbar.set_label(label='ECM density',fontsize=15, color='black')
+    # #### Colorbar ECM density
+    # cbar = plt.colorbar(shrink=0.9)
+    # cbar.outline.set_visible(False)
+    # ax.figure.axes[-1].yaxis.set_label_position('left')
+    # cbar.ax.tick_params(labelsize=15, colors='black') 
+    # cbar.set_label(label='ECM density',fontsize=15, color='black')
 
     # #### Oxygen
-    # cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["white",seaborn.color_palette('colorblind')[4]])
+    # cmap = mpl.colors.LinearSegmentedColormap.from_list("", [seaborn.color_palette('colorblind')[2],"white",seaborn.color_palette('colorblind')[4]])
     # cs = plt.contourf(xx, yy, plane_oxy, cmap=cmap, levels=levels_o2, vmin=0,vmax=38)
-    # plt.colorbar(shrink=0.7,label='Chemical substrate')
+    # plt.colorbar(shrink=0.9,label='Chemical substrate')
+    # ax.figure.axes[-1].yaxis.set_label_position('left')
 
     # #### Anisotropy
     # cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["white",seaborn.color_palette('colorblind')[1]])
@@ -177,14 +179,14 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, title=
     # plt.pcolormesh(xx_ecm,yy_ecm,plane_anisotropy[:,:],cmap=cmap,vmin=0,vmax=1)
     # plt.colorbar(shrink=0.7,label='ECM anisotropy')
 
-    # #### add ECM orientation vectors unscaled by anistorpy ###
-    # plt.quiver(xx, yy, 20*ECM_x, 20*ECM_y,
-    # pivot='middle', angles='xy', scale_units='xy', scale=1, headwidth=0,headlength=0, headaxislength=0)
+    #### add ECM orientation vectors unscaled by anistorpy ###
+    plt.quiver(xx, yy, 20*ECM_x, 20*ECM_y,
+    pivot='middle', angles='xy', scale_units='xy', scale=1, headwidth=0,headlength=0, headaxislength=0)
 
-    #### Add cells layer
-    for j in data['ID'].tolist():
-        circ = Circle((data[data['ID']==j]['position_x'].iloc[0], data[data['ID']==j]['position_y'].iloc[0]),radius=data[data['ID']==j]['radius'].iloc[0], alpha=0.7, edgecolor='black',facecolor=seaborn.color_palette('colorblind')[2])
-        ax.add_artist(circ)
+    # #### Add cells layer
+    # for j in data['ID'].tolist():
+    #     circ = Circle((data[data['ID']==j]['position_x'].iloc[0], data[data['ID']==j]['position_y'].iloc[0]),radius=data[data['ID']==j]['radius'].iloc[0], alpha=0.7, edgecolor='black',facecolor=seaborn.color_palette('colorblind')[2])
+    #     ax.add_artist(circ)
 
     #### Add scalebar 
     scalebar = AnchoredSizeBar(ax.transData,
@@ -208,6 +210,7 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, title=
 
     # Carefully place the command to make the plot square AFTER the color bar has been added.
     ax.axis('scaled')
+    
     # fig.tight_layout()
 
     plt.xticks([])#(np.arange(-edge,edge+1, step=100),fontsize=12,rotation=45)
@@ -217,11 +220,11 @@ def create_plot(data, snapshot, data_folder, save_name, output_plot=True, title=
 
     if title == True:
         # plt.title(f'{prolif=}, {max_mot_speed=}\n{cell_adh=}, {cell_rep=}, {r_density=}',fontsize=10)
-        plt.title(f'chemo={chemotaxis_bias}, ecm_sens={ecm_sensitivity}\nS_cm={max_mot_speed}, {r_degr=}, {r_push=}')
+        plt.title(f'chemo={chemotaxis_bias}, ecm_sens={ecm_sensitivity}, S_cm={max_mot_speed}\n {r_degr=}, {r_push=}, r_orie={fiber_realignment_rate}')
 
     #### Plot output
     if output_plot is True:
-        plt.savefig(save_name,bbox_inches='tight')
+        plt.savefig(save_name,bbox_inches='tight', dpi=300)
     plt.close()
 
 def create_movie(data_folder: str, save_folder: str, save_name: str):
