@@ -21,12 +21,20 @@ def plots_speed_vs_degr_delaunay(data, simulation_name, save_folder, title=True,
     seaborn.set_style('ticks')
 
     #### Collect simulation parameters from the DataFrame
-    ribose = data['ribose'].iloc[0]
+    # ribose = data['ribose'].iloc[0]
+    orientation = data['orientation'].iloc[0]
     t = np.unique(data['t']).astype(int)
     prolif = round(float(data['prolif'].iloc[0]), 5)
     cell_adh = round(float(data['cell_adh'].iloc[0]), 1)
     cell_rep = data['cell_rep'].iloc[0]
     seeds = np.unique(data['seed'])
+    initial_ecm_density = data['initial_ecm_density'].iloc[0]
+    r_anisotropy = data['anisotropy_increase_rate'].iloc[0]
+    r_push = data['ecm_pushing_rate'].iloc[0]
+    r_orientation = data['fiber_realignment_rate'].iloc[0]
+    chemotaxis_bias = data['chemotaxis_bias'].iloc[0]
+    ecm_sensitivity = data['ecm_sensitivity'].iloc[0]
+    fiber_realignment_rate = data['fiber_realignment_rate'].iloc[0]
 
     delaunay_distance_mean = []
     delaunay_distance_std = []
@@ -61,16 +69,16 @@ def plots_speed_vs_degr_delaunay(data, simulation_name, save_folder, title=True,
 
     annot_arr = annot_df.to_numpy()
 
-    #### Define color palette based on ribose concentration
-    if ribose == 0:
-        color_rib = seaborn.color_palette('colorblind')[0]
-        color_rib_dark = seaborn.color_palette('dark')[0]
-    elif ribose == 50:
-        color_rib = seaborn.color_palette('colorblind')[1]
-        color_rib_dark = seaborn.color_palette('dark')[1]
-    elif ribose == 200:
-        color_rib = seaborn.color_palette('colorblind')[2]
-        color_rib_dark = seaborn.color_palette('dark')[2]
+    # #### Define color palette based on ribose concentration
+    # if ribose == 0:
+    #     color_rib = seaborn.color_palette('colorblind')[0]
+    #     color_rib_dark = seaborn.color_palette('dark')[0]
+    # elif ribose == 50:
+    #     color_rib = seaborn.color_palette('colorblind')[1]
+    #     color_rib_dark = seaborn.color_palette('dark')[1]
+    # elif ribose == 200:
+    #     color_rib = seaborn.color_palette('colorblind')[2]
+    #     color_rib_dark = seaborn.color_palette('dark')[2]
 
     color_rib = seaborn.color_palette('colorblind')[0]
     color_rib_dark = seaborn.color_palette('dark')[0]
@@ -80,7 +88,7 @@ def plots_speed_vs_degr_delaunay(data, simulation_name, save_folder, title=True,
 
     #### Plot heatmap
     # hmap = seaborn.heatmap(df,cmap=cmap,vmin=15, vmax=30,ax=ax)
-    hmap = seaborn.heatmap(df, cmap=cmap, vmin=15, vmax=30, annot=annot_arr, annot_kws={"fontsize":10}, fmt="s")
+    hmap = seaborn.heatmap(df, cmap=cmap, vmin=10, vmax=30, annot=annot_arr, annot_kws={"fontsize":10}, fmt="s")
     hmap.figure.axes[-1].yaxis.set_label_position('left')
     cbar = ax.collections[0].colorbar
     cbar.ax.tick_params(labelsize=12)
@@ -98,9 +106,13 @@ def plots_speed_vs_degr_delaunay(data, simulation_name, save_folder, title=True,
     plt.xticks(color='black', fontsize=12)
     if title:
         # plt.title(r'$\bf{Delaunay\,mean\,distance\,at\,{%i}\,h}$' %(max(t)/60) + '\n' r'Proliferation $r_{div}$=0.00072 min$^{-1}$',color='black', fontsize=12)
-        plt.title(r'Proliferation $r_{div}$=%f min$^{-1}$' %(round(prolif,3)),fontsize=12)
+        
+        # plt.title(r'Proliferation $r_{div}$=%f min$^{-1}$' %(round(prolif,3)),fontsize=12)
 
-    plt.savefig(save_folder + f'plots/speed_vs_degr_delaunay_rib{ribose}_{simulation_name}_t{int(max(t)/60)}.png', bbox_inches="tight")
+        plt.title(r'$\bf{Delaunay\,mean\,distance\,at\,{%i}\,h}$' %(max(t)/60) + f'\nchemo={chemotaxis_bias}, ecm_sens={ecm_sensitivity}\n {r_push=}, r_orie={fiber_realignment_rate}\n {initial_ecm_density=}', fontsize=15)
+
+    # plt.savefig(save_folder + f'plots/speed_vs_degr_delaunay_rib{ribose}_{simulation_name}_t{int(max(t)/60)}.png', bbox_inches="tight")
+    plt.savefig(save_folder + f'plots/speed_vs_degr_delaunay_{orientation}_{simulation_name}_t{int(max(t)/60)}.png', bbox_inches="tight")
     plt.close()
 
 
@@ -120,11 +132,19 @@ def plots_speed_vs_degr_spheroid_area_growth(data, simulation_name, save_folder,
     seaborn.set_style('ticks')
 
     #### Collect simulation parameters from the DataFrame
-    ribose = data['ribose'].iloc[0]
+    # ribose = data['ribose'].iloc[0]
+    orientation = data['orientation'].iloc[0]
     t = np.unique(data['t']).astype(int)
     prolif = round(float(data['prolif'].iloc[0]), 5)
     cell_adh = round(float(data['cell_adh'].iloc[0]), 1)
     cell_rep = data['cell_rep'].iloc[0]
+    initial_ecm_density = data['initial_ecm_density'].iloc[0]
+    r_anisotropy = data['anisotropy_increase_rate'].iloc[0]
+    r_push = data['ecm_pushing_rate'].iloc[0]
+    r_orientation = data['fiber_realignment_rate'].iloc[0]
+    chemotaxis_bias = data['chemotaxis_bias'].iloc[0]
+    ecm_sensitivity = data['ecm_sensitivity'].iloc[0]
+    fiber_realignment_rate = data['fiber_realignment_rate'].iloc[0]
 
     spheroid_area_ratio_mean = []
     spheroid_area_ratio_std = []
@@ -162,16 +182,16 @@ def plots_speed_vs_degr_spheroid_area_growth(data, simulation_name, save_folder,
 
     annot_arr = annot_df.to_numpy()
 
-    #### Define color palette based on ribose concentration
-    if ribose == 0:
-        color_rib = seaborn.color_palette('colorblind')[0]
-        color_rib_dark = seaborn.color_palette('dark')[0]
-    elif ribose == 50:
-        color_rib = seaborn.color_palette('colorblind')[1]
-        color_rib_dark = seaborn.color_palette('dark')[1]
-    elif ribose == 200:
-        color_rib = seaborn.color_palette('colorblind')[2]
-        color_rib_dark = seaborn.color_palette('dark')[2]
+    # #### Define color palette based on ribose concentration
+    # if ribose == 0:
+    #     color_rib = seaborn.color_palette('colorblind')[0]
+    #     color_rib_dark = seaborn.color_palette('dark')[0]
+    # elif ribose == 50:
+    #     color_rib = seaborn.color_palette('colorblind')[1]
+    #     color_rib_dark = seaborn.color_palette('dark')[1]
+    # elif ribose == 200:
+    #     color_rib = seaborn.color_palette('colorblind')[2]
+    #     color_rib_dark = seaborn.color_palette('dark')[2]
 
     color_rib = seaborn.color_palette('colorblind')[0]
     color_rib_dark = seaborn.color_palette('dark')[0]
@@ -200,9 +220,14 @@ def plots_speed_vs_degr_spheroid_area_growth(data, simulation_name, save_folder,
     
     if title:
         # plt.title(r'$\bf{Spheroid\,growth\,relative\,to\,t_0\,at\,{%i}\,h}$' %(max(t)/60) + '\n' r'Proliferation $r_{div}$=0.00072 min$^{-1}$',color='black', fontsize=12)
-        plt.title(r'Proliferation $r_{div}$=%f min$^{-1}$' %(round(prolif,3)),fontsize=12)
+        
+        # plt.title(r'Proliferation $r_{div}$=%f min$^{-1}$' %(round(prolif,3)),fontsize=12)
 
-    plt.savefig(save_folder + f'plots/speed_vs_degr_spheroid_area_growth_rib{ribose}_{simulation_name}_t{int(max(t)/60)}.png', bbox_inches="tight")
+        plt.title(r'$\bf{Spheroid\,growth\,relative\,to\,t_0\,at\,{%i}\,h}$' %(max(t)/60) + f'\nchemo={chemotaxis_bias}, ecm_sens={ecm_sensitivity}\n {r_push=}, r_orie={fiber_realignment_rate}\n {initial_ecm_density=}', fontsize=15)
+
+
+    # plt.savefig(save_folder + f'plots/speed_vs_degr_spheroid_area_growth_rib{ribose}_{simulation_name}_t{int(max(t)/60)}.png', bbox_inches="tight")
+    plt.savefig(save_folder + f'plots/speed_vs_degr_spheroid_area_growth_{orientation}_{simulation_name}_t{int(max(t)/60)}.png', bbox_inches="tight")
     plt.close()
 
 
@@ -303,4 +328,5 @@ def plots_sigma_vs_delta_spheroid_area_growth(data, simulation_name, save_folder
         plt.title(f'Ribose {ribose} mM', fontsize=12)
 
     plt.savefig(save_folder + f'plots/sigma_vs_delta_spheroid_area_growth_rib{ribose}_{simulation_name}_t{int(max(t)/60)}.png', bbox_inches="tight")
+    
     plt.close()
