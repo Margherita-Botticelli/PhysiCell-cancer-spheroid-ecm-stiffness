@@ -27,29 +27,30 @@ if repeat_simulations:
 else:
     
     #### Simulations ID number: write number manually or write negative number to find last simulation number in the data folder 
-    simulation_id = 0
+    simulation_id = 148
 
     #### Define random seeds and ribose concentrations
-    random_seed_values = [0] # [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] # 
-    ribose_concentration_values = [0] # [0,50,200] # 
+    random_seed_values = [0]#, 1, 2, 3, 4, 5, 6, 7, 8, 9] # 
+
+    # ribose_concentration_values = [0] # [0,50,200] # 
+    ecm_orientation_setup_values = ['tangential'] #['random' ,'radial','tangential']
 
     #### Define parameter values for the simulations
     cell_cell_adhesion_strength_values = ['4']
     cell_cell_repulsion_strength_values =  ['10']
     prolif_rate_values = ['0.00072'] # ['0'] # 
-    mot_speed_values = ['0.3'] # ['0.1','0.2','0.3'] # ['0.25','0.5','0.75'] # ['0.1','0.2','0.3','0.4'] # ['0.2'] # ['0.1','0.3','0.5'] # 
-    fiber_realignment_rate_values = ['0.01' ]
-    ecm_pushing_rate_values =  ['0.01']  #['0.01'] # ['0.002','0.004','0.006','0.008','0.01'] # 
-    ecm_density_rate_values = ['0.001'] # ['0.002','0.004','0.006','0.008','0.01'] # ['0'] # ['0.01'] # ['0.001','0.01'] # ['0'] # ['0.0002','0.0008','0.0064'] #
+    mot_speed_values = ['0.4'] # ['0.1','0.2','0.3','0.4','0.5','0.6'] # 
+    fiber_realignment_rate_values = ['0.01'] # ['0', '0.001', '0.01', '0.1'] # 
+    ecm_pushing_rate_values =  ['0.01'] # 
+    ecm_density_rate_values = ['0.01'] # ['0','0.001','0.01','0.1'] # 
     anisotropy_increase_rate_values = ['0.001']
-    initial_ecm_density_values = ['0.5']
-    density_target_values = ['0.0'] 
-    initial_anisotropy_values = ['0.0'] 
+    initial_ecm_density_values = ['0.7'] # ['0.5', '0.6', '0.7','0.8','0.9','1'] # ['0.5'] # 
+    density_target_values = ['0.5'] 
+    initial_anisotropy_values = ['0.5'] # ['0.0'] # 
     tumor_radius_values = ['100']
-    ecm_orientation_setup_values = ['random','radial','tangential']
     ecm_sensitivity_values = ['0.9'] # ['0.7','0.9'] # ['0.1','0.3','0.5','0.7','0.9'] # 
-    chemotaxis_bias_values = ['0.1'] #['0.3','0.1'] # ['0.1','0.3','0.5','0.7','0.9'] # ['0.1', '0.2','0.3','0.4','0.5']
-    substrate_density_threshold_values = ['14'] # ['14','16','18'] # ['12','14','16'] # 
+    chemotaxis_bias_values = ['0.2'] # ['0.3','0.1'] # ['0.1','0.3','0.5','0.7','0.9'] # 
+    substrate_density_threshold_values = ['15'] 
 
     simulation_parameters = list(product(
     cell_cell_adhesion_strength_values,
@@ -64,14 +65,12 @@ else:
     density_target_values,
     initial_anisotropy_values,
     tumor_radius_values,
-    ecm_orientation_setup_values,
     ecm_sensitivity_values,
     chemotaxis_bias_values,
     substrate_density_threshold_values
     ))
 
     #### Get total number of simulations
-    # num_simulations = len(mot_speeds)
     num_simulations = len(simulation_parameters)
 
     #### Reset, clean and initiate the project (make sure the project folder exists in data folder too)
@@ -106,13 +105,14 @@ results = []
 i = 0
 
 for sim in simulations:
-    for rib in ribose_concentration_values: 
+    # for rib in ribose_concentration_values: 
+    for orientation in ecm_orientation_setup_values: 
         for seed in random_seed_values:
             # print(f'\n####Simulation {sim}, ribose {rib}, random seed {seed}', flush=True)
             
             #### Create the output folder for the current simulation
             # return_code = os.system(f'mkdir -p ./data/{proj}/output_rib{rib}_{sim}_{seed}')
-            return_code = os.system(f'mkdir -p ./data/{proj}/output_{sim}_{seed}')
+            return_code = os.system(f'mkdir -p ./data/{proj}/output_{orientation}_{sim}_{seed}')
             if return_code != 0:
                 print(f'Failed with exit code: {return_code}')
                 sys.exit()  
@@ -188,10 +188,12 @@ for sim in simulations:
 
             else:
                 # folder.text = f'data/{proj}/output_rib{rib}_{sim}_{seed}/' # type: ignore
-                folder.text = f'data/{proj}/output_{sim}_{seed}/' # type: ignore
+                folder.text = f'data/{proj}/output_{orientation}_{sim}_{seed}/' # type: ignore
 
                 # ribose_concentration.text = str(rib) # type: ignore
                 random_seed.text = str(seed)  # type: ignore
+
+                ecm_orientation_setup.text = orientation # type: ignore
 
                 cell_cell_adhesion_strength.text = simulation_parameters[i][0] # type: ignore
                 cell_cell_repulsion_strength.text = simulation_parameters[i][1] # type: ignore
@@ -205,12 +207,10 @@ for sim in simulations:
                 density_target.text = simulation_parameters[i][9] # type: ignore
                 initial_anisotropy.text = simulation_parameters[i][10] # type: ignore
                 tumor_radius.text = simulation_parameters[i][11] # type: ignore
-                ecm_orientation_setup.text = simulation_parameters[i][12] # type: ignore
-                ecm_sensitivity.text = simulation_parameters[i][13] # type: ignore
-                chemotaxis_bias.text = simulation_parameters[i][14] # type: ignore
-                substrate_density_threshold.text = simulation_parameters[i][15] # type: ignore
+                ecm_sensitivity.text = simulation_parameters[i][12] # type: ignore
+                chemotaxis_bias.text = simulation_parameters[i][13] # type: ignore
+                substrate_density_threshold.text = simulation_parameters[i][14] # type: ignore
 
-                
                 # sigma.text = str(sigma_text) # type: ignore
                 # delta.text = str(delta_text) # type: ignore
             
@@ -220,18 +220,18 @@ for sim in simulations:
 
             #### Copy custom.cpp file from custom_modules folder into new simulation folder
             # os.system(f'cp ./custom_modules/custom.cpp ./data/{proj}/output_rib{rib}_{sim}_{seed}/')
-            os.system(f'cp ./custom_modules/custom.cpp ./data/{proj}/output_{sim}_{seed}/')
+            os.system(f'cp ./custom_modules/custom.cpp ./data/{proj}/output_{orientation}_{sim}_{seed}/')
 
             #### Copy PhysiCell_settings file from config folder into new simulation folder
             # os.system(f'cp ./config/PhysiCell_settings.xml ./data/{proj}/output_rib{rib}_{sim}_{seed}/')
-            os.system(f'cp ./config/PhysiCell_settings.xml ./data/{proj}/output_{sim}_{seed}/')
+            os.system(f'cp ./config/PhysiCell_settings.xml ./data/{proj}/output_{orientation}_{sim}_{seed}/')
 
             #### Start simulation (simulations run in parallel)
             os.system('make') 
             if len(results)==0:
                 return_code = subprocess.Popen(f'./project')
                 results.append(return_code)
-            elif len(results)%9==0:
+            elif len(results)%14==0:
                 return_code = subprocess.run(f'./project')
                 results.append(return_code)
             else:
@@ -240,7 +240,7 @@ for sim in simulations:
 
             os.system('sleep 5') 
 
-            i += 1 
+    i += 1 
 
 # Iterate through all return codes, only exit when all are done (subprocess.run)
 # returns True because we know it waits until finishing
