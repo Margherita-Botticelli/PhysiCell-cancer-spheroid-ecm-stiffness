@@ -929,14 +929,16 @@ void cell_ecm_adhesion_direction( Cell* pCell, Phenotype& phenotype, double dt )
 
 		fiber_orientation = anisotropy * fiber_orientation + (1 - anisotropy) * d_random_fiber_orientation;
 
-		std::vector<double> norm_cell_motility; // = pCell->velocity;
-		norm_cell_motility.resize(3,0.0);
-		std::vector<double> velocity = {pCell->custom_data["total_velocity_x"], pCell->custom_data["total_velocity_y"], pCell->custom_data["total_velocity_z"]};
-		norm_cell_motility = velocity;
-		normalize(&norm_cell_motility);
+		// std::vector<double> norm_cell_motility; // = pCell->velocity;
+		// norm_cell_motility.resize(3,0.0);
+		// std::vector<double> velocity = {pCell->custom_data["total_velocity_x"], pCell->custom_data["total_velocity_y"], pCell->custom_data["total_velocity_z"]};
+		// norm_cell_motility = velocity;
+		// normalize(&norm_cell_motility);
 		
 		double ddotf;
-		ddotf = dot_product_ext(fiber_orientation, norm_cell_motility);
+		// ddotf = dot_product_ext(fiber_orientation, norm_cell_motility);
+
+		ddotf = dot_product_ext(fiber_orientation, d_pref);
 		fiber_orientation = sign_function(ddotf) * fiber_orientation;
 
 		normalize( &fiber_orientation ); 
@@ -1097,8 +1099,8 @@ void ecm_pushing(Cell* pCell , Phenotype& phenotype , double dt)
 	double r_pushing = pCell->custom_data["ecm_pushing_rate"];
 
 	// Cell's velocity vector
-	// std::vector<double> velocity = {pCell->custom_data["total_velocity_x"], pCell->custom_data["total_velocity_y"], pCell->custom_data["total_velocity_z"]};
-	std::vector<double> velocity = phenotype.motility.motility_vector;
+	std::vector<double> velocity = {pCell->custom_data["total_velocity_x"], pCell->custom_data["total_velocity_y"], pCell->custom_data["total_velocity_z"]};
+	// std::vector<double> velocity = phenotype.motility.motility_vector;
 
 	// Position of the cell
 	std::vector<double> position = pCell->position;
@@ -1110,6 +1112,9 @@ void ecm_pushing(Cell* pCell , Phenotype& phenotype , double dt)
 
 	std::vector<double> voxel_center = ecm.ecm_voxels[voxel_index].center;
 
+	// Set density target 
+	double density_target = parameters.doubles("density_target");
+
 	// Initialize remainder ECM density at position of the cell
 	int adjacent_voxel_index;
 	double initial_adjacent_ecm_density = 0;
@@ -1119,7 +1124,7 @@ void ecm_pushing(Cell* pCell , Phenotype& phenotype , double dt)
 	int ecm_mesh_length = sqrt(ecm.ecm_voxels.size());		
 
 	// Check if ECM density at cell's position is zero and that we are not at the edge of the domain
-	if (ecm_density > 0 && 				
+	if (ecm_density > 0 && 
 	voxel_index > ecm_mesh_length && 							// exclude top row
 	voxel_index < (ecm.ecm_voxels.size() - ecm_mesh_length) &&  // exclude bottom row
 	voxel_index % ecm_mesh_length > 0 && 						// exclude LHS
@@ -1237,10 +1242,15 @@ void ecm_realignment(Cell* pCell , Phenotype& phenotype , double dt)
 	double r_fiber = r_f0 * migration_speed * (1 - anisotropy);
 
 	double ddotf;
-	std::vector<double> norm_cell_motility; // = pCell->velocity;
+	std::vector<double> norm_cell_motility;
+
 	norm_cell_motility.resize(3,0.0);
-	
+
 	norm_cell_motility = phenotype.motility.motility_vector;
+
+	// std::vector<double> velocity = {pCell->custom_data["total_velocity_x"], pCell->custom_data["total_velocity_y"], pCell->custom_data["total_velocity_z"]};
+	// norm_cell_motility = velocity;
+
 	normalize(&norm_cell_motility);
 	
 	ddotf = dot_product_ext(fiber_orientation, norm_cell_motility);
@@ -1324,16 +1334,42 @@ void proliferation_inhibition( Cell* pCell, Phenotype& phenotype, double dt )
 	// std::cout<<"substrate_density_threshold: "<<substrate_density_threshold<<std::endl;
 	
 
-    if(substrate_density <= substrate_density_threshold)
+    // if(substrate_density <= substrate_density_threshold)
+	// {
+	// 	proliferation_rate = 0;
+	// }
+
+	proliferation_rate *= Hill_response_function(substrate_density, 21.5, 1);
+
+	double pressure = get_single_signal( pCell , "pressure");
+
+	double distance;
+	distance = 2 * phenotype.geometry.nuclear_radius;
+	// distance = 12;
+	double R = 2 * phenotype.geometry.radius;
+	double simple_pressure_scale = 0.027288820670331;
+
+	double temp_r = -distance; // -d
+	temp_r /= R; // -d/R
+	temp_r += 1.0; // 1-d/R
+	temp_r *= temp_r; // (1-d/R)^2 
+
+	double pressure_threshold = 6*(temp_r/simple_pressure_scale);
+	// std::cout<<"Pressure threshold: "<<pressure_threshold<<std::endl;
+
+
+	if( pressure > pressure_threshold)
 	{
+		// std::cout<<"Pressure: "<<pressure<<std::endl;
+
 		proliferation_rate = 0;
 	}
 
-	// Computing the index of the voxel at cell position
-	int voxel_index = microenvironment.nearest_voxel_index( pCell->position );
+	// // Computing the index of the voxel at cell position
+	// int voxel_index = microenvironment.nearest_voxel_index( pCell->position );
 
-    // Dependence on ECM density
-	proliferation_rate *= (1 - ecm.ecm_voxels[voxel_index].density);
+    // // Dependence on ECM density
+	// proliferation_rate *= (1 - ecm.ecm_voxels[voxel_index].density);
 	
 	// Set new proliferation rate
 	set_single_behavior(pCell,"cycle entry", proliferation_rate);
@@ -1370,8 +1406,7 @@ void custom_update_cell_velocity( Cell* pCell, Phenotype& phenotype, double dt)
 	pCell->custom_data["total_velocity_z"] = pCell->velocity[2];
 
     pCell->custom_data["attached_cells"] = pCell->state.neighbors.size();
-
-
+	
 	return; 
 }
 
