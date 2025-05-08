@@ -56,25 +56,25 @@ if __name__ == '__main__':
     # simulations = list(range(0,40))   
     # simulations = list(range(0,4))
     # simulations = list(range(4,148))
-    simulations = [2]
+    simulations = [3]
 
     #### Flag to determine if existing data should be replaced
-    replace = False
+    replace = True
     
     #### List of ribose concentrations to test
     # riboses = [0] #[50,200] # [50,200] # Options: 0, 50, 200
 
     #### List of fibre orientations to test
-    orientations = ['tangential'] # ['random','radial', 'tangential'] # Options:'random', 'radial', 'tangential'
+    orientations = ['random','radial', 'tangential'] # ['tangential'] # Options:'random', 'radial', 'tangential'
 
     #### Number of random seeds for simulations
-    n_seeds = 10
+    n_seeds = 1
     seeds = list(range(0, n_seeds))
 
     #### Flags for different types of plots
     title = True # Title on plots
     least_squares = False
-    plots_over_time = False 
+    plots_over_time = True 
     box_plots = False
     contour = False # Contour lines on heatmaps
     heatmaps_speed_vs_degr = False
@@ -144,8 +144,8 @@ if __name__ == '__main__':
 
                     data = df[(df['simulation'] == sim) & (df['orientation'] == orientation)]
 
-                    # plots_spheroid_area_growth_over_time(data, save_folder, title=title)
-                    # plots_delaunay_mean_distance_over_time(data, save_folder, title=title)
+                    plots_spheroid_area_growth_over_time(data, save_folder, title=title)
+                    plots_delaunay_mean_distance_over_time(data, save_folder, title=title)
                     # plots_cell_count_over_time(data, save_folder, title=title)
                     plots_invasion_over_time(data, save_folder, n, title=title)
                 plt.close('all')
