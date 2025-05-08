@@ -27,13 +27,13 @@ if repeat_simulations:
 else:
     
     #### Simulations ID number: write number manually or write negative number to find last simulation number in the data folder 
-    simulation_id = 148
+    simulation_id = 3
 
     #### Define random seeds and ribose concentrations
     random_seed_values = [0]#, 1, 2, 3, 4, 5, 6, 7, 8, 9] # 
 
     # ribose_concentration_values = [0] # [0,50,200] # 
-    ecm_orientation_setup_values = ['tangential'] #['random' ,'radial','tangential']
+    ecm_orientation_setup_values = ['random' ,'radial','tangential'] # ['tangential'] # 
 
     #### Define parameter values for the simulations
     cell_cell_adhesion_strength_values = ['4']
