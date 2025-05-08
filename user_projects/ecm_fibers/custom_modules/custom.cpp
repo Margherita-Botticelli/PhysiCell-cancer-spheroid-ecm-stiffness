@@ -1222,65 +1222,63 @@ void ecm_pushing(Cell* pCell , Phenotype& phenotype , double dt)
 }
 
 
-void ecm_realignment(Cell* pCell , Phenotype& phenotype , double dt) 
+void ecm_realignment(Cell* pCell, Phenotype& phenotype, double dt) 
 {
-	/**************** Cell-ECM Fiber realingment***************/
+    /**************** Cell-ECM Fiber Realignment ***************/
 
-	// Computing the index of the voxel at cell position
-	int voxel_index = microenvironment.nearest_voxel_index( pCell->position );
+    // Compute the index of the voxel at the cell's position
+    int voxel_index = microenvironment.nearest_voxel_index(pCell->position);
 
-	// Get index for accessing the ecm_fiber_alignment data structure and then copy the correct value
-	std::vector<double> fiber_orientation = ecm.ecm_voxels[voxel_index].ecm_fiber_alignment; 
+    // Get the fiber orientation and anisotropy at the voxel
+    std::vector<double> fiber_orientation = ecm.ecm_voxels[voxel_index].ecm_fiber_alignment;
+    double anisotropy = ecm.ecm_voxels[voxel_index].anisotropy;
 
-	double anisotropy = ecm.ecm_voxels[voxel_index].anisotropy;
+    // Get the cell's migration speed
+    double migration_speed = pCell->phenotype.motility.migration_speed;
 
-	// Get cell migration speed
-	double migration_speed = pCell->phenotype.motility.migration_speed;
+    // Compute the fiber realignment rate
+    double r_f0 = pCell->custom_data["fiber_realignment_rate"];
+    double r_fiber = r_f0 * migration_speed * (1 - anisotropy);
 
-	// Compute fibre realignment rate
-	double r_f0 = pCell->custom_data["fiber_realignment_rate"];
-	double r_fiber = r_f0 * migration_speed * (1 - anisotropy);
+    // Get the normalized cell motility vector
+    std::vector<double> norm_cell_motility = pCell->phenotype.motility.motility_vector;
+    normalize(&norm_cell_motility);
 
+	// Check if the fiber should be flipped
 	double ddotf;
-	std::vector<double> norm_cell_motility;
-
-	norm_cell_motility.resize(3,0.0);
-
-	norm_cell_motility = phenotype.motility.motility_vector;
-
-	// std::vector<double> velocity = {pCell->custom_data["total_velocity_x"], pCell->custom_data["total_velocity_y"], pCell->custom_data["total_velocity_z"]};
-	// norm_cell_motility = velocity;
-
-	normalize(&norm_cell_motility);
-	
 	ddotf = dot_product_ext(fiber_orientation, norm_cell_motility);
+	fiber_orientation = sign_function(ddotf) * fiber_orientation;
 
-	// flips the orientation vector so that it is aligned correctly with the moving cell for proper reoirentation later.
-	fiber_orientation = sign_function(ddotf) * fiber_orientation; 
+    // Update the fiber orientation to align closer to the cell motility vector
+    for (int i = 0; i < 3; i++) {
+        fiber_orientation[i] += dt * r_fiber * (norm_cell_motility[i] - fiber_orientation[i]);
+    }
 
-	std::vector<double> f_minus_d;
-	f_minus_d.resize(3,0.0);
+    // Normalize the updated fiber orientation
+    normalize(&fiber_orientation);
 
-	for(int i = 0; i < 3; i++)
-	{
-		// if (ddotf<0.0)
-		// {
-		// 	fiber_orientation = -1.0 * fiber_orientation;
-		// }
-		f_minus_d[i] = fiber_orientation[i] - norm_cell_motility[i]; 
-		ecm.ecm_voxels[voxel_index].ecm_fiber_alignment[i] -= dt * r_fiber * f_minus_d[i]; 
-	}
+    // Update the ECM voxel's fiber alignment
+    ecm.ecm_voxels[voxel_index].ecm_fiber_alignment = fiber_orientation;
+
+
+	// // Old update method
+	// std::vector<double> f_minus_d;
+	// f_minus_d.resize(3,0.0);
+
+	// for(int i = 0; i < 3; i++)
+	// {
+	// 	if (ddotf<0.0)
+	// 	{
+	// 		fiber_orientation = -1.0 * fiber_orientation;
+	// 	}
+	// 	ecm.ecm_voxels[voxel_index].ecm_fiber_alignment[i] += dt * r_fiber * (norm_cell_motility[i] - fiber_orientation[i]); 
+	// }
 	
-	normalize(&(ecm.ecm_voxels[voxel_index].ecm_fiber_alignment)); 
-
-	if (ecm.ecm_voxels[voxel_index].ecm_fiber_alignment[2] != 0)
-	{
-		std::cout<<"norm_cell_motility: "<<norm_cell_motility<<std::endl;
-		std::cout<<"fiber_orientation: "<<fiber_orientation<<std::endl<<std::endl;
-	}
+	// normalize(&(ecm.ecm_voxels[voxel_index].ecm_fiber_alignment)); 
 
     return;
 }
+
 
 void ecm_anisotropy_increase(Cell* pCell , Phenotype& phenotype , double dt) 
 {
