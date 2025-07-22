@@ -53,6 +53,7 @@ else:
     ))
 
     #### Get total number of simulations
+    # num_simulations = len(mot_speeds)
     num_simulations = len(simulation_parameters)
 
     #### Reset, clean and initiate the project (make sure the project folder exists in data folder too)
@@ -166,10 +167,7 @@ for sim in simulations:
                 random_seed.text = str(seed)  # type: ignore
                 folder.text = f'data/{proj}/output_rib{rib}_{sim}_{seed}/' # type: ignore
 
-                cell_cell_adhesion_strength.text = simulation_parameters[i][0] # type: ignore
                 cell_cell_repulsion_strength.text = simulation_parameters[i][1] # type: ignore
-                prolif_rate.text = simulation_parameters[i][2] # type: ignore
-                mot_speed.text = simulation_parameters[i][3] # type: ignore
                 ecm_density_rate.text = simulation_parameters[i][4] # str(r_density) # type: ignore
 
                 sigma.text = simulation_parameters[i][5] # str(r_density) # type: ignore
@@ -181,6 +179,7 @@ for sim in simulations:
                 tumor_radius.text = '100' # type: ignore
                 ecm_orientation_setup.text =  'random' # 'horizontal' # 'starburst' # 'random' # 'circular' #  # type: ignore
 
+                
                 # sigma.text = str(sigma_text) # type: ignore
                 # delta.text = str(delta_text) # type: ignore
             
