@@ -19,7 +19,7 @@ def delaunay_distance_function(data, save_folder='../results/', figure=False):
     """
     
     #### Extract simulation parameters from the DataFrame
-    # ribose = data['ribose'].iloc[0]
+    ribose = data['ribose'].iloc[0]
     simulation = data['simulation'].iloc[0]
     seed = data['seed'].iloc[0]
     t = data['t'].iloc[0]
@@ -81,8 +81,7 @@ def delaunay_distance_function(data, save_folder='../results/', figure=False):
         ax.add_artist(scalebar)
 
         #### Save the plot
-        # plt.savefig(save_folder + f'/statistics/delaunay_rib{ribose}_{simulation}_{seed}_t{int(t)}.png', bbox_inches='tight')
-        plt.savefig(save_folder + f'/statistics/delaunay_{simulation}_{seed}_t{int(t)}.png', bbox_inches='tight')
+        plt.savefig(save_folder + f'/statistics/delaunay_rib{ribose}_{simulation}_{seed}_t{int(t)}.png', bbox_inches='tight')
         plt.close()
 
     return edges_lengths_mean
