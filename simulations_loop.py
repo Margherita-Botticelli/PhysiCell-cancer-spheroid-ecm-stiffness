@@ -1,3 +1,4 @@
+from itertools import product
 import xml.etree.ElementTree as ET
 import os, sys
 from pathlib import Path
@@ -29,10 +30,9 @@ else:
 
     #### Define random seeds and ribose concentrations
     random_seed_values = [0]#, 1, 2, 3, 4, 5, 6, 7, 8, 9] # 
-    riboses = [0] # [0, 50, 200] # 
+    ribose_concentration_values = [0] # [0, 50, 200] # 
 
     #### Define parameter values for the simulations
-
     cell_cell_adhesion_strength_values = ['0.4']
     cell_cell_repulsion_strength_values =  ['10']
     prolif_rate_values = ['0.0004', '0.0006', '0.0008'] # [0.00072] # 
@@ -40,7 +40,6 @@ else:
     ecm_density_rate_values = ['0.0001',' 0.0002', '0.0004', '0.0008', '0.0016', '0.0032', '0.0064', '0.0128'] # ['0.0032'] # ['0.0001'] # ['0.0004'] # 
     sigma_vals = ['0.0','0.005','0.01','0.015','0.02','0.025','0.03','0.035','0.04','0.045'] # ['0.035']
     delta_vals = ['0.0','0.005','0.01','0.015','0.02','0.025','0.03','0.035','0.04','0.045'] # ['0.02']
-
 
     simulation_parameters = list(product(
     cell_cell_adhesion_strength_values,
@@ -61,9 +60,6 @@ else:
     if return_code != 0:
         print(f'Failed with exit code: {return_code}')
         sys.exit()
-
-    #### Simulations ID number: write number manually or write negative number to find last simulation number in the data folder 
-    simulation_id = 0
 
     #### If the simulation_id number is negative find the last simulation number in the data folder
     if simulation_id < 0:
