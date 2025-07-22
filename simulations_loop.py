@@ -3,19 +3,18 @@ import os, sys
 from pathlib import Path
 import numpy as np
 import subprocess
-from itertools import product
 
 #### Script to run multiple simulations automatically by giving the parameter values
 
 #### Project name corresponding to folder in user_projects
-proj = 'ecm_fibers' # 'test' # 'ecm_density'
+proj = 'ecm_density' # 'test' # 'ecm_fibres'
 
 #### True if we want to repeat an existing simulation with different random seeds or ribose concentrations 
 repeat_simulations = False
 
 if repeat_simulations:
     seeds = [0,1,2,3,4,5,6,7,8,9]
-    riboses = [0]
+    riboses = [50,200]
     simulations = [0]
 
     return_code = os.system(f'make reset; make clean; make load PROJ={proj}')
@@ -25,6 +24,7 @@ if repeat_simulations:
     # sys.exit()
 
 else:
+<<<<<<< HEAD
     
     #### Simulations ID number: write number manually or write negative number to find last simulation number in the data folder 
     simulation_id = 3
@@ -72,12 +72,61 @@ else:
 
     #### Get total number of simulations
     num_simulations = len(simulation_parameters)
+=======
+    #### Define parameter values for the simulations
+    seeds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] # [0] # 
+    riboses = [0] # [0, 50, 200] # 
+    proliferation_vals = [0.0002, 0.0003, 0.0004] # [0.00032] # [0.00037] # 
+    mot_speed_vals = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6] # [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1] # [0.1] # [0.6] # [0.6] # 
+    repulsion_vals = [10]
+    adhesion_vals = [0.4]
+    r_density_vals = [0.0001, 0.0002, 0.0004, 0.0008, 0.0016, 0.0032, 0.0064, 0.0128] # [0.001] # [0.01] # 
+    sigma_vals = [0] # [0, 0.001]
+    delta_vals = [0] # [0, 0.001]
+
+    #### Combine parameters
+    sigmas = np.repeat(sigma_vals, len(delta_vals))
+    deltas = delta_vals * len(sigma_vals)
+    proliferations = np.repeat(proliferation_vals * len(sigmas), len(mot_speed_vals) * len(adhesion_vals) * len(r_density_vals))
+    mot_speeds = np.repeat(mot_speed_vals * len(proliferation_vals)  * len(sigmas) ,  len(adhesion_vals)  * len(r_density_vals)) 
+    repulsions = repulsion_vals * len(proliferation_vals) * len(mot_speed_vals) * len(r_density_vals) * len(sigmas)
+    adhesions = adhesion_vals * len(proliferation_vals) * len(mot_speed_vals) * len(r_density_vals)  * len(sigmas) 
+    r_densities = np.repeat(r_density_vals * len(proliferation_vals) * len(mot_speed_vals) * len(sigmas), len(adhesion_vals) ) 
+    sigmas = np.repeat(sigmas,len(proliferations)* len(delta_vals))
+    deltas = np.repeat(deltas * len(sigma_vals),len(proliferations))
+    
+    #### Check if the parameters all have same length
+    length_list_parameters = [len(proliferations),len(repulsions),len(adhesions),len(mot_speeds),len(r_densities), len(sigmas), len(deltas)] #,len(r_orientations),len(r_anisotropies)]
+    print(f'Parameter arrays lengths {length_list_parameters}', flush=True)
+
+    length_list_parameters = [i for i in length_list_parameters if i != 0]
+    length_list_parameters = list(np.unique(length_list_parameters))
+    
+    print(f'Mot speeds: {mot_speeds}\n')
+    print(f'Prolif: {proliferations}\n')
+    print(f'Rep: {repulsions}\n')
+    print(f'Adh: {adhesions}\n')
+    print(f'Degradation: {r_densities}\n')
+    print(f'sigma  : {sigmas}\n')
+    print(f'delta: {deltas}\n')
+
+    #### If not exit
+    if len(length_list_parameters)>1:
+        print(f'Parameter arrays length no match', flush=True)
+        sys.exit() 
+
+    #### Get total number of simulations
+    num_simulations = len(mot_speeds)
+>>>>>>> parent of c617012 (Update simulations_loop.py)
 
     #### Reset, clean and initiate the project (make sure the project folder exists in data folder too)
     return_code = os.system(f'make reset; make clean; make load PROJ={proj}')
     if return_code != 0:
         print(f'Failed with exit code: {return_code}')
         sys.exit()
+
+    #### Simulations ID number: write number manually or write negative number to find last simulation number in the data folder 
+    simulation_id = 0
 
     #### If the simulation_id number is negative find the last simulation number in the data folder
     if simulation_id < 0:
@@ -90,8 +139,7 @@ else:
         if not directories:
             simulation_id = 0
         else:
-            # simulation_ids = [int(name.split('_')[2]) for name in directories]
-            simulation_ids = [int(name.split('_')[1]) for name in directories]
+            simulation_ids = [int(name.split('_')[2]) for name in directories]
             simulation_ids.sort()
             simulation_id = max(simulation_ids) + 1
 
@@ -102,9 +150,11 @@ else:
 #### List to check when all of the simulations are finished
 results = []
 
+#### Initiate parameter to go through parameter lists every new simulation loop
 i = 0
 
 for sim in simulations:
+<<<<<<< HEAD
     # for rib in ribose_concentration_values: 
     for orientation in ecm_orientation_setup_values: 
         for seed in random_seed_values:
@@ -113,6 +163,24 @@ for sim in simulations:
             #### Create the output folder for the current simulation
             # return_code = os.system(f'mkdir -p ./data/{proj}/output_rib{rib}_{sim}_{seed}')
             return_code = os.system(f'mkdir -p ./data/{proj}/output_{orientation}_{sim}_{seed}')
+=======
+    if repeat_simulations == False:
+        #### Select parameter values
+        proliferation = proliferations[i]
+        motility_speed = mot_speeds[i] 
+        adhesion = adhesions[i]
+        repulsion = repulsions[i]
+        r_density = r_densities[i]
+        sigma_text = sigmas[i]
+        delta_text = deltas[i]
+
+    for rib in riboses: 
+        for seed in seeds:
+            print(f'\n####Simulation {sim}, ribose {rib}, random seed {seed}', flush=True)
+            
+            #### Create the output folder for the current simulation
+            return_code = os.system(f'mkdir -p ./data/{proj}/output_rib{rib}_{sim}_{seed}')
+>>>>>>> parent of c617012 (Update simulations_loop.py)
             if return_code != 0:
                 print(f'Failed with exit code: {return_code}')
                 sys.exit()  
@@ -121,7 +189,7 @@ for sim in simulations:
                 ### Start the experiment with the given ribose and seed in the settings file ###
                 
                 #### Copy PhysiCell_settings file from existing simulation with ribose 0 into config folder
-                return_code = os.system(f'cp ./data/{proj}/output_rib50_{sim}_{seed}/PhysiCell_settings.xml ./config/')
+                return_code = os.system(f'cp ./data/{proj}/output_rib0_{sim}_{seed}/PhysiCell_settings.xml ./config/')
                 if return_code != 0:
                     print(f'Failed with exit code: {return_code}')
                     sys.exit()
@@ -132,9 +200,13 @@ for sim in simulations:
                     print(f'Failed with exit code: {return_code}')
                     sys.exit()
             else:
+<<<<<<< HEAD
                 # print(f'#### {motility_speed=}, {proliferation=}, {adhesion=}, {repulsion=}, {r_density=} ####\n',flush=True)
 
                 print(f'simulation {sim} out of {simulation_id + num_simulations -1} ') # type: ignore
+=======
+                print(f'#### {motility_speed=}, {proliferation=}, {adhesion=}, {repulsion=}, {r_density=} ####\n',flush=True)
+>>>>>>> parent of c617012 (Update simulations_loop.py)
 
             #### Select PhysiCell_settings file from config folder 
             tree = ET.parse('./config/PhysiCell_settings.xml')  
@@ -150,7 +222,6 @@ for sim in simulations:
             ribose_concentration = user_parameters.find('ribose_concentration') # type: ignore
             ecm_orientation_setup = user_parameters.find('ecm_orientation_setup') # type: ignore
             initial_anisotropy = user_parameters.find('initial_anisotropy') # type: ignore
-            initial_ecm_density = user_parameters.find('initial_ecm_density') # type: ignore
             tumor_radius = user_parameters.find('tumor_radius') # type: ignore
             folder = save.find('folder')    # type: ignore
             cell_definition = cell_definitions.find('cell_definition') # type: ignore
@@ -168,17 +239,10 @@ for sim in simulations:
             mot_speed = motility.find('speed') # type: ignore
             fiber_realignment_rate = custom_data.find('fiber_realignment_rate') # type: ignore
             ecm_density_rate = custom_data.find('ecm_density_rate') # type: ignore
-            ecm_pushing_rate = custom_data.find('ecm_pushing_rate') # type: ignore
             anisotropy_increase_rate = custom_data.find('anisotropy_increase_rate') # type: ignore
             ecm_sensitivity = custom_data.find('ecm_sensitivity') # type: ignore
             sigma = user_parameters.find('sigma') # type: ignore
             delta = user_parameters.find('delta') # type: ignore
-
-            chemotaxis_bias = custom_data.find('chemotaxis_bias') # type: ignore
-            ecm_orientation_setup = user_parameters.find('ecm_orientation_setup') # type: ignore
-            substrate_density_threshold = custom_data.find('substrate_density_threshold') # type: ignore
-
-            density_target = user_parameters.find('density_target') # type: ignore
         
             if(repeat_simulations):
                 virtual_wall_at_domain_edge.text = 'true' # type: ignore
@@ -187,6 +251,7 @@ for sim in simulations:
                 folder.text = f'data/{proj}/output_rib{rib}_{sim}_{seed}/' # type: ignore
 
             else:
+<<<<<<< HEAD
                 # folder.text = f'data/{proj}/output_rib{rib}_{sim}_{seed}/' # type: ignore
                 folder.text = f'data/{proj}/output_{orientation}_{sim}_{seed}/' # type: ignore
 
@@ -213,25 +278,54 @@ for sim in simulations:
 
                 # sigma.text = str(sigma_text) # type: ignore
                 # delta.text = str(delta_text) # type: ignore
+=======
+                random_seed.text = str(seed)  # type: ignore
+                folder.text = f'data/{proj}/output_rib{rib}_{sim}_{seed}/' # type: ignore
+                ribose_concentration.text = str(rib) # type: ignore
+                cell_cell_adhesion_strength.text = str(adhesion) # type: ignore
+                cell_cell_repulsion_strength.text = str(repulsion) # type: ignore
+                prolif_rate.text = str(proliferation) # type: ignore
+                mot_speed.text = str(motility_speed) # type: ignore
+                fiber_realignment_rate.text = '0' # type: ignore
+                ecm_density_rate.text = str(r_density) # type: ignore
+                anisotropy_increase_rate.text = '0' # type: ignore
+                # ecm_sensitivity.text = '0'
+                sigma.text = str(sigma_text) # type: ignore
+                delta.text = str(delta_text) # type: ignore
+                initial_anisotropy.text = '0' # type: ignore
+                tumor_radius.text = '100' # type: ignore
+                ecm_orientation_setup.text =  'random' # 'horizontal' # 'starburst' # 'random' # 'circular' #  # type: ignore
+>>>>>>> parent of c617012 (Update simulations_loop.py)
             
             #### Write the xml file for the current simulation
             tree.write('./config/PhysiCell_settings.xml')    
             print(f'#### Xml settings file has been written\n',flush=True)
 
             #### Copy custom.cpp file from custom_modules folder into new simulation folder
+<<<<<<< HEAD
             # os.system(f'cp ./custom_modules/custom.cpp ./data/{proj}/output_rib{rib}_{sim}_{seed}/')
             os.system(f'cp ./custom_modules/custom.cpp ./data/{proj}/output_{orientation}_{sim}_{seed}/')
 
             #### Copy PhysiCell_settings file from config folder into new simulation folder
             # os.system(f'cp ./config/PhysiCell_settings.xml ./data/{proj}/output_rib{rib}_{sim}_{seed}/')
             os.system(f'cp ./config/PhysiCell_settings.xml ./data/{proj}/output_{orientation}_{sim}_{seed}/')
+=======
+            os.system(f'cp ./custom_modules/custom.cpp ./data/{proj}/output_rib{rib}_{sim}_{seed}/')
+
+            #### Copy PhysiCell_settings file from config folder into new simulation folder
+            os.system(f'cp ./config/PhysiCell_settings.xml ./data/{proj}/output_rib{rib}_{sim}_{seed}/')
+>>>>>>> parent of c617012 (Update simulations_loop.py)
 
             #### Start simulation (simulations run in parallel)
             os.system('make') 
             if len(results)==0:
                 return_code = subprocess.Popen(f'./project')
                 results.append(return_code)
+<<<<<<< HEAD
             elif len(results)%14==0:
+=======
+            elif len(results)%19==0:
+>>>>>>> parent of c617012 (Update simulations_loop.py)
                 return_code = subprocess.run(f'./project')
                 results.append(return_code)
             else:
@@ -240,7 +334,11 @@ for sim in simulations:
 
             os.system('sleep 5') 
 
+<<<<<<< HEAD
     i += 1 
+=======
+    i += 1
+>>>>>>> parent of c617012 (Update simulations_loop.py)
 
 # Iterate through all return codes, only exit when all are done (subprocess.run)
 # returns True because we know it waits until finishing
