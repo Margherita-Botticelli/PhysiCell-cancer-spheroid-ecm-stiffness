@@ -37,13 +37,13 @@ def reduce_mem_usage(df, verbose=True):
                     df[col] = df[col].astype(np.int32)
                 elif c_min > np.iinfo(np.int64).min and c_max < np.iinfo(np.int64).max:
                     df[col] = df[col].astype(np.int64)
-            # else:  # For float columns
-            #     if c_min > np.finfo(np.float16).min and c_max < np.finfo(np.float16).max:
-            #         df[col] = df[col].astype(np.float16)
-            #     elif c_min > np.finfo(np.float32).min and c_max < np.finfo(np.float32).max:
-            #         df[col] = df[col].astype(np.float32)
-            #     else:
-            #         df[col] = df[col].astype(np.float64)
+            else:  # For float columns
+                if c_min > np.finfo(np.float16).min and c_max < np.finfo(np.float16).max:
+                    df[col] = df[col].astype(np.float16)
+                elif c_min > np.finfo(np.float32).min and c_max < np.finfo(np.float32).max:
+                    df[col] = df[col].astype(np.float32)
+                else:
+                    df[col] = df[col].astype(np.float64)
 
     end_mem = df.memory_usage(deep=True).sum() / 1024**2
     if verbose:
@@ -51,8 +51,7 @@ def reduce_mem_usage(df, verbose=True):
     
     return df
 
-# def snapshot_data(ribose, simulation, seed, snapshot, data_folder):
-def snapshot_data(simulation, seed, snapshot, data_folder):
+def snapshot_data(ribose, simulation, seed, snapshot, data_folder):
     """
     Process a single snapshot to extract cell data and simulation parameters.
 
@@ -93,12 +92,11 @@ def snapshot_data(simulation, seed, snapshot, data_folder):
     cell_df = cell_df.drop(cell_var_remove, axis=1)  # Drop unnecessary columns
 
     #### Rearrange columns and add simulation parameters
-    # dictionary = ['simulation', 'ribose', 'seed', 't'] + list(cell_df.columns)
-    dictionary = ['simulation', 'seed', 't'] + list(cell_df.columns)
+    dictionary = ['simulation', 'ribose', 'seed', 't'] + list(cell_df.columns)
     cell_df['t'] = t
     cell_df['simulation'] = simulation
     cell_df['seed'] = seed
-    # cell_df['ribose'] = ribose
+    cell_df['ribose'] = ribose
     cell_df = cell_df[dictionary]
 
     #### Add simulation parameters from XML settings file
@@ -115,10 +113,10 @@ def snapshot_data(simulation, seed, snapshot, data_folder):
     mechanics = phenotype.find('mechanics') # type: ignore
     phase_transition_rates = cycle.find('phase_transition_rates') # type: ignore
 
-    # sigma = float(user_parameters.find('sigma').text)  # type: ignore
-    # delta = float(user_parameters.find('delta').text)  # type: ignore
-    # cell_df['sigma'] = sigma
-    # cell_df['delta'] = delta
+    sigma = float(user_parameters.find('sigma').text)  # type: ignore
+    delta = float(user_parameters.find('delta').text)  # type: ignore
+    cell_df['sigma'] = sigma
+    cell_df['delta'] = delta
 
     cell_cell_adhesion_strength = mechanics.find('cell_cell_adhesion_strength') # type: ignore
     cell_adh = float(cell_cell_adhesion_strength.text)  # type: ignore
@@ -137,8 +135,8 @@ def snapshot_data(simulation, seed, snapshot, data_folder):
     spheroid_area = spheroid_area_function(cell_df)
     cell_df['spheroid_area'] = spheroid_area
 
-    # delaunay_distance = delaunay_distance_function(cell_df)
-    # cell_df['delaunay_distance'] = delaunay_distance
+    delaunay_distance = delaunay_distance_function(cell_df)
+    cell_df['delaunay_distance'] = delaunay_distance
 
     #### Set index based on snapshot name
     index = int(snapshot.replace("output", ""))
@@ -146,9 +144,7 @@ def snapshot_data(simulation, seed, snapshot, data_folder):
 
     return cell_df
 
-
-# def simulation_data(data_folder_dir, simulation, ribose, seed, replace=False):
-def simulation_data(data_folder_dir, simulation, seed, replace=False):
+def simulation_data(data_folder_dir, simulation, ribose, seed, replace=False):
     """
     Process all snapshots for a given simulation and save the resulting DataFrame.
 
@@ -162,12 +158,10 @@ def simulation_data(data_folder_dir, simulation, seed, replace=False):
     Returns:
     - None
     """
-    # print(f"\n#### {ribose=}, {simulation=}, {seed=} ####\n", flush=True)
-    print(f"\n#### {simulation=}, {seed=} ####\n", flush=True)
+    print(f"\n#### {ribose=}, {simulation=}, {seed=} ####\n", flush=True)
 
     #### Check if DataFrame already exists and replace flag
-    # df_path = data_folder_dir + f'output_rib{ribose}_{simulation}_{seed}/dataframe_rib{ribose}_{simulation}_{seed}.pkl'
-    df_path = data_folder_dir + f'output_{simulation}_{seed}/dataframe_{simulation}_{seed}.pkl'
+    df_path = data_folder_dir + f'output_rib{ribose}_{simulation}_{seed}/dataframe_rib{ribose}_{simulation}_{seed}.pkl'
     if os.path.exists(df_path) and not replace:
         print(f"\nDataframe exists\n", flush=True)
         return
@@ -176,8 +170,7 @@ def simulation_data(data_folder_dir, simulation, seed, replace=False):
             print(f"\n!!! Replace {replace} !!!\n", flush=True)
 
         #### Prepare data folder and process files
-        # data_folder = data_folder_dir + f'output_rib{ribose}_{simulation}_{seed}/'
-        data_folder = data_folder_dir + f'output_{simulation}_{seed}/'
+        data_folder = data_folder_dir + f'output_rib{ribose}_{simulation}_{seed}/'
         files = os.listdir(data_folder)
         files.sort()
 
@@ -187,8 +180,7 @@ def simulation_data(data_folder_dir, simulation, seed, replace=False):
                 continue
             snapshot = file.split('_')[0]
             # print(f'Processing snapshot {snapshot}', flush=True)
-            # df_new = snapshot_data(ribose, simulation, seed, snapshot, data_folder)
-            df_new = snapshot_data(simulation, seed, snapshot, data_folder)
+            df_new = snapshot_data(ribose, simulation, seed, snapshot, data_folder)
 
             #### Reduce memory usage and append to list
             df_new = reduce_mem_usage(df_new, verbose=False)
@@ -199,4 +191,3 @@ def simulation_data(data_folder_dir, simulation, seed, replace=False):
         df.to_pickle(df_path)
 
         return
-
